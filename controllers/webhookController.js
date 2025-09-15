@@ -1,7 +1,7 @@
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
-const globalStore = require('../globals/globalStore');
-const { authHeaders } = require('./oauthControllers');
+// const globalStore = require('../globals/globalStore');
+// const { authHeaders } = require('./oauthControllers');
 
 async function authHeaders() {
   const apiKey = process.env.SERVICEM8_API_KEY;
