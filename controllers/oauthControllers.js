@@ -84,7 +84,6 @@ const callback = async (req, res) => {
         <div class="card">
           <h1>✅ Connected Successfully!</h1>
           <p>Your ServiceM8 account is now linked.</p>
-          <a href="/customers">View Customers</a>
         </div>
       </body>
       </html>
