@@ -1,6 +1,7 @@
 const axios = require('axios');
 const qs = require('querystring');
-const globalStore = require('../globals/globalStore');
+const fs = require('fs');
+const path = require('path');
 
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
@@ -8,6 +9,22 @@ const SERVICEM8_AUTH_URL = 'https://go.servicem8.com/oauth/authorize';
 const SERVICEM8_TOKEN_URL = 'https://go.servicem8.com/oauth/token';
 const SERVICEM8_CUSTOMERS_URL = 'https://api.servicem8.com/api_1.0/company.json';
 
+const TOKEN_FILE = path.join(__dirname, "../tokens.json");
+
+// 🔹 Load saved tokens if available
+function loadTokens() {
+  if (fs.existsSync(TOKEN_FILE)) {
+    return JSON.parse(fs.readFileSync(TOKEN_FILE, "utf8"));
+  }
+  return {};
+}
+
+// 🔹 Save tokens persistently
+function saveTokens(tokens) {
+  fs.writeFileSync(TOKEN_FILE, JSON.stringify(tokens, null, 2));
+}
+
+let tokenStore = loadTokens();
 
 const auth = (req, res) => {
   const SCOPE = 'read_customers read_customer_contacts read_jobs manage_jobs create_jobs read_job_contacts manage_job_contacts read_job_queues manage_job_queues read_schedule manage_schedule read_staff read_job_categories manage_job_categories read_job_notes publish_job_notes read_attachments manage_attachments read_job_attachments publish_job_attachments publish_email publish_sms';
@@ -32,7 +49,12 @@ const callback = async (req, res) => {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
 
-    globalStore.access_token = tokenRes.data.access_token;
+    tokenStore = {
+      access_token: tokenRes.data.access_token,
+      refresh_token: tokenRes.data.refresh_token,
+    };
+    saveTokens(tokenStore);
+
     res.send(`
       <!DOCTYPE html>
       <html lang="en">
@@ -134,52 +156,68 @@ const callback = async (req, res) => {
   }
 }
 
+async function ensureToken() {
+  try {
+    // Test if current access token still works
+    if (tokenStore.access_token) {
+      await axios.get(SERVICEM8_CUSTOMERS_URL, {
+        headers: { Authorization: `Bearer ${tokenStore.access_token}` },
+      });
+      return tokenStore.access_token;
+    }
+  } catch (err) {
+    if (err.response?.status !== 401) throw err;
+  }
+
+  // 🔄 If expired or missing, refresh with refresh_token
+  if (!tokenStore.refresh_token) {
+    throw new Error("No refresh token available. Please run /auth again.");
+  }
+
+  console.log("🔄 Refreshing ServiceM8 token...");
+  const tokenRes = await axios.post(
+    SERVICEM8_TOKEN_URL,
+    qs.stringify({
+      grant_type: "refresh_token",
+      refresh_token: tokenStore.refresh_token,
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET,
+    }),
+    { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+  );
+
+  tokenStore.access_token = tokenRes.data.access_token;
+  if (tokenRes.data.refresh_token) {
+    tokenStore.refresh_token = tokenRes.data.refresh_token; // rotate if provided
+  }
+  saveTokens(tokenStore);
+  return tokenStore.access_token;
+}
+
+async function authHeaders() {
+  const token = await ensureToken();
+  return {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/json"
+  };
+}
+
 
 const customers = async (req, res) => {
-  console.log("(globalStore.access_token", globalStore.access_token)
-  if (!globalStore.access_token) return res.redirect('/auth');
-
   try {
-    const response = await axios.get(SERVICEM8_CUSTOMERS_URL, {
-      headers: {
-        'Authorization': `Bearer ${globalStore.access_token}`,
-        'Accept': 'application/json'
-      }
-    });
-
-    const compId = "a82254d4-3438-4f4b-a2e3-231b2b97220b";
-
-    const customerRes = await axios.get(`https://api.servicem8.com/api_1.0/company/${compId}.json`, {
-      headers: {
-        Authorization: `Bearer ${globalStore.access_token}`,
-        Accept: 'application/json',
-      }
-    });
-
-    const customer = customerRes.data;
-
-    const queuedata = await axios.get(
-      'https://api.servicem8.com/api_1.0/queue.json',{},
-      {
-        headers: {
-          Authorization: `Bearer ${globalStore.access_token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        },
-      }
-    );
-
-    console.log("queuedata", queuedata.data);
-
-    res.json({cust: response.data, queue: queuedata.data, customer: customer});
+    const headers = await authHeaders();
+    const { data } = await axios.get(SERVICEM8_CUSTOMERS_URL, { headers });
+    res.json(data);
   } catch (error) {
-    console.log("error", error);
-    res.status(500).send('Failed to fetch customers');
+    console.error("Customer fetch failed:", error.response?.data || error.message);
+    res.status(500).send("Failed to fetch customers");
   }
-}
+};
 
 module.exports = {
   auth,
   callback,
-  customers
+  customers,
+  ensureToken, 
+  authHeaders
 }
