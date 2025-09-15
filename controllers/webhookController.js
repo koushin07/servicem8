@@ -1,8 +1,15 @@
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
-const globalStore = require('../globals/globalStore');
-const { authHeaders } = require('./oauthControllers');
+// // const { authHeaders } = require('./oauthControllers');
 
+async function authHeaders() {
+  const apiKey = process.env.SERVICEM8_API_KEY;
+  const base64 = Buffer.from(`${apiKey}:`).toString("base64");
+  return {
+    Authorization: `Basic ${base64}`,
+    Accept: "application/json"
+  };
+}
 
 const handleSendEmailIfCompleted = async (req, res) => {
   try {
