@@ -1,15 +1,8 @@
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const globalStore = require('../globals/globalStore');
+const { authHeaders } = require('./oauthControllers');
 
-// ------------------ Helpers ------------------
-function authHeaders(isFile = false) {
-  return {
-    Authorization: `Bearer ${globalStore.access_token}`,
-    Accept: 'application/json',
-    ...(isFile && { 'Content-Type': 'multipart/form-data' }),
-  };
-}
 
 const handleSendEmailIfCompleted = async (req, res) => {
   try {
