@@ -202,7 +202,7 @@ async function authHeaders() {
   };
 }
 
-// ---------------- Example API ----------------
+
 const customers = async (req, res) => {
   try {
     const headers = await authHeaders();
