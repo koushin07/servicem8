@@ -33,9 +33,105 @@ const callback = async (req, res) => {
     });
 
     globalStore.access_token = tokenRes.data.access_token;
-    res.send('OAuth successful! Now you can <a href="/customers">fetch customers</a>.');
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>OAuth Successful</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            background: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+          }
+          .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+          }
+          h1 {
+            color: #16a34a;
+          }
+          p {
+            margin: 1rem 0;
+            color: #374151;
+          }
+          a {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background 0.2s;
+          }
+          a:hover {
+            background: #1d4ed8;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h1>✅ Connected Successfully!</h1>
+          <p>Your ServiceM8 account is now linked.</p>
+          <a href="/customers">View Customers</a>
+        </div>
+      </body>
+      </html>
+    `);
   } catch (error) {
-    res.status(500).send('OAuth failed');
+    res.status(500).send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>OAuth Failed</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            background: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+          }
+          .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+          }
+          h1 {
+            color: #dc2626;
+          }
+          p {
+            margin: 1rem 0;
+            color: #374151;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h1>❌ Connection Failed</h1>
+          <p>We couldn't complete the connection. Please try again.</p>
+        </div>
+      </body>
+      </html>
+    `);
   }
 }
 
