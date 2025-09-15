@@ -1,6 +1,6 @@
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
-// const globalStore = require('../globals/globalStore');
+// // const globalStore = require('../globals/globalStore');
 // const { authHeaders } = require('./oauthControllers');
 
  function authHeaders() {
@@ -9,8 +9,9 @@ const jwt = require('jsonwebtoken');
   console.log("Generated Auth Header", apiKey);
   console.log("Generated Auth base64", base64);
   return {
-    Authorization: `Basic ${base64}`,
-    Accept: "application/json"
+     "X-API-KEY": apiKey,
+    Accept: "application/json",
+    "Content-Type": "application/json"
   };
 }
 
