@@ -38,6 +38,11 @@ const handleSendEmailIfCompleted = async (req, res) => {
         return res.sendStatus(200);
       }
 
+      if(primaryContact.email !== "markalfreys@gmail.com" || primaryContact.first !== "Testing Mark Alfrey") {
+        console.log("Not From Mark:", primaryContact.email);
+        return res.sendStatus(200);
+      }
+
       //Sending email
       let emailSent = false;
       if (primaryContact.email) {
