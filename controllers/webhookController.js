@@ -1,7 +1,16 @@
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
+const globalStore = require('../globals/globalStore');
 const { authHeaders } = require('./oauthControllers');
 
+async function authHeaders() {
+  const apiKey = process.env.SERVICEM8_API_KEY;
+  const base64 = Buffer.from(`${apiKey}:`).toString("base64");
+  return {
+    Authorization: `Basic ${base64}`,
+    Accept: "application/json"
+  };
+}
 
 const handleSendEmailIfCompleted = async (req, res) => {
   try {
@@ -11,7 +20,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
 
     const { data: existingJob } = await axios.get(
       `https://api.servicem8.com/api_1.0/job/${jobUuid}.json`,
-      { headers: authHeaders() }
+      { headers: await authHeaders() }
     );
 
     console.log("jobUuid", jobUuid);
@@ -20,7 +29,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
     if (existingJob.status === "Completed") {
       const { data: contacts } = await axios.get(
         `https://api.servicem8.com/api_1.0/jobcontact.json?$filter=job_uuid eq ${jobUuid}`,
-        { headers: authHeaders() }
+        { headers: await authHeaders() }
       );
 
       const primaryContact = (contacts || []).find((c) => c.email || c.mobile || c.phone);
@@ -48,7 +57,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
               textBody: `Hello ${primaryContact.first || ""}, your job at ${existingJob.job_address} has been marked as Completed.`,
               regardingJobUUID: jobUuid,
             },
-            { headers: authHeaders() }
+            { headers: await authHeaders() }
           );
           console.log(`ServiceM8 email sent to ${primaryContact.email}`);
           emailSent = true;
@@ -69,7 +78,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
               message: `Hi ${primaryContact.first || ""}, your job at ${existingJob.job_address} is now completed.`,
               regardingJobUUID: jobUuid,
             },
-            { headers: authHeaders() }
+            { headers: await authHeaders() }
           );
           console.log(`SMS sent to ${smsNumber}`);
         } catch (smsErr) {
