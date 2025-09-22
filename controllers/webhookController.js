@@ -2,6 +2,7 @@ const axios = require("axios");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
+const handlebars = require("handlebars");
 
 function authHeaders() {
   const apiKey = process.env.SERVICEM8_API_KEY;
@@ -49,33 +50,47 @@ const handleSendEmailIfCompleted = async (req, res) => {
       }
 
       //Sending email
+
       let emailSent = false;
       if (primaryContact.email) {
         try {
           console.log(`Attempting to send email to ${primaryContact.email}`);
 
-          // Load your HTML template
+          // Load and compile template
           const templatePath = path.join(
             __dirname,
             "..",
             "templates",
             "confirmation.html"
           );
+          const templateSource = fs.readFileSync(templatePath, "utf8");
+          const compiledTemplate = handlebars.compile(templateSource);
 
-          const htmlBody = fs.readFileSync(templatePath, "utf8");
-          console.log("the path to the template is", templatePath);
+          // Inject dynamic data
+          const htmlBody = compiledTemplate({
+            customerName: primaryContact.name,
+            jobAddress: existingJob.job_address,
+            completedDate: new Date().toLocaleDateString(),
+          });
+
+          console.log(
+            "📨 Sending ServiceM8 email with template:",
+            templatePath
+          );
+
+          // Send via ServiceM8
           await axios.post(
             "https://api.servicem8.com/platform_service_email",
             {
               to: primaryContact.email,
               subject: `Job Completed: ${existingJob.job_address}`,
-              htmlBody, // use your template file here
+              htmlBody,
               regardingJobUUID: jobUuid,
             },
             { headers: authHeaders() }
           );
 
-          console.log(`ServiceM8 email sent to ${primaryContact.email}`);
+          console.log(`✅ ServiceM8 email sent to ${primaryContact.email}`);
           emailSent = true;
         } catch (err) {
           console.error(
@@ -84,7 +99,6 @@ const handleSendEmailIfCompleted = async (req, res) => {
           );
         }
       }
-
       //Send SMS
       if (primaryContact.mobile || primaryContact.phone) {
         const smsNumber = primaryContact.mobile || primaryContact.phone;
