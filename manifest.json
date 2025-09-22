@@ -1,17 +1,17 @@
 {
-  "name": "SM8 TO Brevo",
+  "name": "Send Email and SMS Automation",
   "version": "1.0",
   "functions": [
     {
       "trigger": "manual",
       "http_method": "GET",
-      "url": "https://send-servicem8-email-and-sms-automation.onrender.com/customers",
+      "url": "https://send-servicem8-email-and-sms-automation-6ywb.onrender.com/customers",
       "name": "Fetch Customers",
       "description": "Fetches new customers from ServiceM8 and sends them to Bravo."
     }
   ],
   "oauth": {
-    "redirect_uri": "https://send-servicem8-email-and-sms-automation.onrender.com/callback",
+    "redirect_uri": "https://send-servicem8-email-and-sms-automation-6ywb.onrender.com/callback",
     "scope": "read_customers read_customer_contacts read_jobs manage_jobs create_jobs read_job_contacts manage_job_contacts read_job_queues manage_job_queues read_schedule manage_schedule read_staff read_job_categories manage_job_categories read_job_notes publish_job_notes read_attachments manage_attachments read_job_attachments publish_job_attachments publish_email publish_sms"
   },
   "webhooks": [

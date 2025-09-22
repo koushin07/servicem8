@@ -1,17 +1,12 @@
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
-// // const globalStore = require('../globals/globalStore');
-// const { authHeaders } = require('./oauthControllers');
+const axios = require("axios");
+const jwt = require("jsonwebtoken");
 
- function authHeaders() {
+function authHeaders() {
   const apiKey = process.env.SERVICEM8_API_KEY;
-  const base64 = Buffer.from(`${apiKey}:`).toString("base64");
-  console.log("Generated Auth Header", apiKey);
-  console.log("Generated Auth base64", base64);
   return {
-     "X-API-KEY": apiKey,
+    "X-API-KEY": apiKey,
     Accept: "application/json",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
   };
 }
 
@@ -23,26 +18,30 @@ const handleSendEmailIfCompleted = async (req, res) => {
 
     const { data: existingJob } = await axios.get(
       `https://api.servicem8.com/api_1.0/job/${jobUuid}.json`,
-      { headers:  authHeaders() }
+      { headers: authHeaders() }
     );
 
-    console.log("jobUuid", jobUuid);
-    console.log("existingJob.status", existingJob.status);
+    console.log("New Trigger", existingJob.status);
 
     if (existingJob.status === "Completed") {
       const { data: contacts } = await axios.get(
         `https://api.servicem8.com/api_1.0/jobcontact.json?$filter=job_uuid eq ${jobUuid}`,
-        { headers:  authHeaders() }
+        { headers: authHeaders() }
       );
 
-      const primaryContact = (contacts || []).find((c) => c.email || c.mobile || c.phone);
+      const primaryContact = (contacts || []).find(
+        (c) => c.email || c.mobile || c.phone
+      );
 
       if (!primaryContact) {
         console.log("⚠️ No contact found for job");
         return res.sendStatus(200);
       }
 
-      if(primaryContact.email !== "markalfreys@gmail.com" || primaryContact.first !== "Testing Mark Alfrey") {
+      if (
+        primaryContact.email !== "canaresmiko3@gmail.com" ||
+        primaryContact.first !== "Testing Mark Alfrey"
+      ) {
         console.log("Not From Mark:", primaryContact.email);
         return res.sendStatus(200);
       }
@@ -52,25 +51,38 @@ const handleSendEmailIfCompleted = async (req, res) => {
       if (primaryContact.email) {
         try {
           console.log(`Attempting to send email to ${primaryContact.email}`);
+
+          // Load your HTML template
+          const templatePath = path.join(
+            __dirname,
+            "template",
+            "confirmation.html"
+          );
+          const htmlBody = fs.readFileSync(templatePath, "utf8");
+
           await axios.post(
             "https://api.servicem8.com/platform_service_email",
             {
               to: primaryContact.email,
               subject: `Job Completed: ${existingJob.job_address}`,
-              textBody: `Hello ${primaryContact.first || ""}, your job at ${existingJob.job_address} has been marked as Completed.`,
+              htmlBody, // use your template file here
               regardingJobUUID: jobUuid,
             },
-            { headers:  authHeaders() }
+            { headers: authHeaders() }
           );
+
           console.log(`ServiceM8 email sent to ${primaryContact.email}`);
           emailSent = true;
         } catch (err) {
-          console.error("❌ Failed to send email", err.response?.data || err.message);
+          console.error(
+            "❌ Failed to send email",
+            err.response?.data || err.message
+          );
         }
       }
 
       //Send SMS
-      if ((primaryContact.mobile || primaryContact.phone)) {
+      if (primaryContact.mobile || primaryContact.phone) {
         const smsNumber = primaryContact.mobile || primaryContact.phone;
         try {
           console.log(`Attempting to send SMS to ${smsNumber}`);
@@ -78,14 +90,38 @@ const handleSendEmailIfCompleted = async (req, res) => {
             "https://api.servicem8.com/platform_service_sms",
             {
               to: smsNumber,
-              message: `Hi ${primaryContact.first || ""}, your job at ${existingJob.job_address} is now completed.`,
+              message: `
+              How did we go?
+
+              We hope you're thrilled with the service you received from ASAP Roadworthys! Your opinion matters greatly to us and helps us ensure we're always delivering top-notch service. Could you spare a minute to share your experience?
+
+              Share Your Experience: https://bit.ly/feedseq
+
+              It's quick and easy—just click the button above to get started. Your feedback is invaluable and helps us improve every day.
+
+              Thank you for choosing ASAP Roadworthys, and we look forward to serving you again!
+
+              Warm regards,
+
+              The ASAP Roadworthys Team
+
+              FOR MORE INFORMATION
+              Call Now: (07) 5611 7044 or visit https://www.asaproadworthys.com.au
+
+              FULL TERMS AND CONDITIONS
+              Terms and Conditions: https://asaprwc.com/TCs
+              Terms of Inspection: https://asaprwc.com/TOI
+              `,
               regardingJobUUID: jobUuid,
             },
-            { headers:  authHeaders() }
+            { headers: authHeaders() }
           );
           console.log(`SMS sent to ${smsNumber}`);
         } catch (smsErr) {
-          console.error("❌ Failed to send SMS", smsErr.response?.data || smsErr.message);
+          console.error(
+            "❌ Failed to send SMS",
+            smsErr.response?.data || smsErr.message
+          );
         }
       }
 
@@ -94,10 +130,12 @@ const handleSendEmailIfCompleted = async (req, res) => {
 
     res.sendStatus(200);
   } catch (err) {
-    console.error("❌ Error in handleSendEmailIfCompleted", err.response?.data || err.message);
+    console.error(
+      "❌ Error in handleSendEmailIfCompleted",
+      err.response?.data || err.message
+    );
     res.status(500).json({ error: err.message });
   }
 };
-
 
 module.exports = { handleSendEmailIfCompleted };
