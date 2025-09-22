@@ -1,5 +1,8 @@
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const path = require("path");
+
 
 function authHeaders() {
   const apiKey = process.env.SERVICEM8_API_KEY;
@@ -61,7 +64,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
           );
 
           const htmlBody = fs.readFileSync(templatePath, "utf8");
-console.log("the path to the template is", templatePath);
+          console.log("the path to the template is", templatePath);
           await axios.post(
             "https://api.servicem8.com/platform_service_email",
             {
