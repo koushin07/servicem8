@@ -68,7 +68,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
 
           // Inject dynamic data
           const htmlBody = compiledTemplate({
-            customerName: primaryContact.name,
+            customerName: primaryContact.first,
             jobAddress: existingJob.job_address,
             completedDate: new Date().toLocaleDateString(),
           });

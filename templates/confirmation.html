@@ -4,325 +4,370 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Order Confirmation</title>
-    <style>
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        background-color: #f8f8f8;
-        color: #333;
-        font-size: 14px;
-        line-height: 1.4;
-      }
-
-      .container {
-        max-width: 600px;
-        margin: 0 auto;
-        background: white;
-        padding: 30px;
-      }
-
-      .logo {
-        text-align: center;
-        margin-bottom: 30px;
-      }
-
-      .logo img {
-        max-width: 250px;
-        height: auto;
-      }
-
-      h1 {
-        font-size: 22px;
-        font-weight: 600;
-        margin: 0 0 20px 0;
-        color: #000;
-      }
-
-      .greeting {
-        margin-bottom: 5px;
-        color: #000;
-      }
-
-      .confirmation {
-        margin-bottom: 25px;
-        color: #000;
-      }
-
-      .divider {
-        height: 1px;
-        background-color: #ddd;
-        margin: 25px 0;
-      }
-
-      .order-info {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 25px;
-        flex-wrap: wrap;
-      }
-
-      .info-group {
-        flex: 1;
-        margin-right: 20px;
-      }
-
-      .info-group:last-child {
-        margin-right: 0;
-      }
-
-      .info-label {
-        color: #999;
-        font-size: 12px;
-        margin-bottom: 3px;
-      }
-
-      .info-value {
-        color: #000;
-        font-size: 14px;
-        line-height: 1.3;
-      }
-
-      .service-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 15px 0;
-        border-bottom: 1px solid #ddd;
-      }
-
-      .service-left {
-        display: flex;
-        align-items: center;
-      }
-
-      .service-icon {
-        width: 18px;
-        height: 18px;
-        background-color: #000;
-        border-radius: 50%;
-        margin-right: 12px;
-        position: relative;
-        flex-shrink: 0;
-      }
-
-      .service-icon::after {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 6px;
-        height: 6px;
-        background-color: white;
-        border-radius: 50%;
-      }
-
-      .service-info h3 {
-        margin: 0 0 2px 0;
-        font-size: 16px;
-        font-weight: 600;
-        color: #000;
-      }
-
-      .service-info p {
-        margin: 0;
-        color: #999;
-        font-size: 12px;
-      }
-
-      .service-price {
-        font-size: 20px;
-        font-weight: 600;
-        color: #000;
-      }
-
-      .addon-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 12px 0;
-        color: #000;
-        font-size: 14px;
-        border-bottom: 1px solid #f0f0f0;
-      }
-
-      .addon-row:last-of-type {
-        border-bottom: 1px solid #ddd;
-        margin-bottom: 15px;
-      }
-
-      .summary-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px 0;
-        color: #000;
-        font-size: 14px;
-      }
-
-      .total-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 12px 0;
-        margin-top: 8px;
-        border-top: 2px solid #000;
-        font-weight: 700;
-        font-size: 18px;
-        color: #000;
-      }
-
-      .footer-text {
-        margin: 30px 0 25px 0;
-        color: #000;
-        font-size: 14px;
-        line-height: 1.4;
-      }
-
-      .thank-you {
-        margin: 25px 0 8px 0;
-        font-weight: 600;
-        color: #000;
-        font-size: 14px;
-      }
-
-      .company-name {
-        margin-bottom: 40px;
-        color: #000;
-        font-size: 14px;
-      }
-
-      .contact-section {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 20px;
-        border-top: 1px solid #ddd;
-        color: #000;
-        font-size: 14px;
-      }
-
-      .contact-section a {
-        color: #0066cc;
-        text-decoration: none;
-      }
-
-      @media (max-width: 600px) {
-        .order-info {
-          flex-direction: column;
-        }
-
-        .info-group {
-          margin-right: 0;
-          margin-bottom: 15px;
-        }
-
-        .contact-section {
-          flex-direction: column;
-          text-align: center;
-          gap: 8px;
-        }
-      }
-    </style>
   </head>
-  <body>
-    <div class="container" style="background-color: #fffbf2">
-      <div class="logo">
-        <!-- Replace with your logo URL -->
-        <img
-          src="https://drive.google.com/file/d/1ohcseFYMbaindE_SndlN4hy85GJLQxas/view?usp=sharing"
-          alt="ASAP RoadWorthys"
-        />
-      </div>
+  <body
+    style="
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #f8f8f8;
+      color: #333;
+      font-size: 14px;
+    "
+  >
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="max-width: 600px; margin: 0 auto; background-color: white"
+    >
+      <tr>
+        <td style="padding: 30px">
+          <!-- Logo -->
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="text-align: center; padding-bottom: 30px">
+                <img
+                  src="https://drive.google.com/file/d/1ohcseFYMbaindE_SndlN4hy85GJLQxas/view?usp=sharing"
+                  alt="ASAP RoadWorthys"
+                  style="max-width: 250px; height: auto"
+                />
+              </td>
+            </tr>
+          </table>
 
-      <h1>Your Order Confirmation!</h1>
+          <!-- Header -->
+          <h1
+            style="
+              font-size: 22px;
+              font-weight: 600;
+              margin: 0 0 20px 0;
+              color: #000;
+            "
+          >
+            Your Order Confirmation!
+          </h1>
 
-      <p class="greeting">Hi {{ name }},</p>
-      <p class="confirmation">Your Order has been confirmed.</p>
+          <p style="margin: 0 0 5px 0; color: #000">Hi {{customerName}},</p>
+          <p style="margin: 0 0 25px 0; color: #000">
+            Your Order has been confirmed.
+          </p>
 
-      <div class="divider"></div>
+          <!-- Divider -->
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td
+                style="height: 1px; background-color: #ddd; margin: 25px 0"
+              ></td>
+            </tr>
+          </table>
 
-      <div class="order-info">
-        <div class="info-group">
-          <div class="info-label">Order Date</div>
-          <div class="info-value">September 16, 2025<br />9:00 - 10:00 AM</div>
-        </div>
+          <!-- Order Info -->
+          <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            style="margin-bottom: 25px"
+          >
+            <tr>
+              <td width="25%" style="vertical-align: top; padding-right: 15px">
+                <p style="color: #999; font-size: 12px; margin: 0 0 3px 0">
+                  Order Date
+                </p>
+                <p
+                  style="
+                    color: #000;
+                    font-size: 14px;
+                    margin: 0;
+                    line-height: 1.3;
+                  "
+                >
+                  September 16, 2025<br />9:00 - 10:00 AM
+                </p>
+              </td>
+              <td width="25%" style="vertical-align: top; padding-right: 15px">
+                <p style="color: #999; font-size: 12px; margin: 0 0 3px 0">
+                  Order ID
+                </p>
+                <p style="color: #000; font-size: 14px; margin: 0">BK5549513</p>
+              </td>
+              <td width="25%" style="vertical-align: top; padding-right: 15px">
+                <p style="color: #999; font-size: 12px; margin: 0 0 3px 0">
+                  Payment
+                </p>
+                <p style="color: #000; font-size: 14px; margin: 0">VISA</p>
+              </td>
+              <td width="25%" style="vertical-align: top">
+                <p style="color: #999; font-size: 12px; margin: 0 0 3px 0">
+                  Address
+                </p>
+                <p
+                  style="
+                    color: #000;
+                    font-size: 14px;
+                    margin: 0;
+                    line-height: 1.3;
+                  "
+                >
+                  12 George Street, Sydney NSW 2000
+                </p>
+              </td>
+            </tr>
+          </table>
 
-        <div class="info-group">
-          <div class="info-label">Order ID</div>
-          <div class="info-value">BK5549513</div>
-        </div>
+          <!-- Divider -->
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td
+                style="height: 1px; background-color: #ddd; margin: 25px 0"
+              ></td>
+            </tr>
+          </table>
 
-        <div class="info-group">
-          <div class="info-label">Payment</div>
-          <div class="info-value">VISA</div>
-        </div>
+          <!-- Mobile Service -->
+          <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            style="border-bottom: 1px solid #ddd; padding: 15px 0"
+          >
+            <tr>
+              <td style="vertical-align: middle">
+                <table cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="vertical-align: middle; padding-right: 12px">
+                      <div
+                        style="
+                          width: 18px;
+                          height: 18px;
+                          background-color: #000;
+                          border-radius: 50%;
+                          position: relative;
+                          display: inline-block;
+                        "
+                      >
+                        <div
+                          style="
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            width: 6px;
+                            height: 6px;
+                            background-color: white;
+                            border-radius: 50%;
+                            transform: translate(-50%, -50%);
+                          "
+                        ></div>
+                      </div>
+                    </td>
+                    <td style="vertical-align: middle">
+                      <h3
+                        style="
+                          margin: 0 0 2px 0;
+                          font-size: 16px;
+                          font-weight: 600;
+                          color: #000;
+                        "
+                      >
+                        Mobile Service
+                      </h3>
+                      <p style="margin: 0; color: #999; font-size: 12px">
+                        Duration 45-90 Minutes
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+              <td style="text-align: right; vertical-align: middle">
+                <span style="font-size: 20px; font-weight: 600; color: #000"
+                  >$199</span
+                >
+              </td>
+            </tr>
+          </table>
 
-        <div class="info-group">
-          <div class="info-label">Address</div>
-          <div class="info-value">12 George Street, Sydney NSW 2000</div>
-        </div>
-      </div>
+          <!-- Addons -->
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding: 12px 0; border-bottom: 1px solid #f0f0f0">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="color: #000; font-size: 14px">Addon 2</td>
+                    <td style="text-align: right; color: #000; font-size: 14px">
+                      $20
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 0; border-bottom: 1px solid #f0f0f0">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="color: #000; font-size: 14px">Addon 3</td>
+                    <td style="text-align: right; color: #000; font-size: 14px">
+                      $36
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="
+                  padding: 12px 0;
+                  border-bottom: 1px solid #ddd;
+                  margin-bottom: 15px;
+                "
+              >
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="color: #000; font-size: 14px">Addon 4</td>
+                    <td style="text-align: right; color: #000; font-size: 14px">
+                      $78
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
 
-      <div class="divider"></div>
+          <!-- Summary -->
+          <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            style="margin-top: 15px"
+          >
+            <tr>
+              <td style="padding: 8px 0">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="color: #000; font-size: 14px">Subtotal</td>
+                    <td style="text-align: right; color: #000; font-size: 14px">
+                      $313
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="color: #000; font-size: 14px">Transportation</td>
+                    <td style="text-align: right; color: #000; font-size: 14px">
+                      $25
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="color: #000; font-size: 14px">Taxes</td>
+                    <td style="text-align: right; color: #000; font-size: 14px">
+                      $72
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
 
-      <div class="service-row">
-        <div class="service-left">
-          <div class="service-icon"></div>
-          <div class="service-info">
-            <h3>Mobile Service</h3>
-            <p>Duration 45-90 Minutes</p>
-          </div>
-        </div>
-        <div class="service-price">$199</div>
-      </div>
+          <!-- Total -->
+          <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            style="
+              margin-top: 8px;
+              border-top: 2px solid #000;
+              padding-top: 12px;
+            "
+          >
+            <tr>
+              <td>
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="color: #000; font-size: 18px; font-weight: 700">
+                      Total
+                    </td>
+                    <td
+                      style="
+                        text-align: right;
+                        color: #000;
+                        font-size: 18px;
+                        font-weight: 700;
+                      "
+                    >
+                      $1000
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
 
-      <div class="addon-row">
-        <span>Addon 2</span>
-        <span>$20</span>
-      </div>
+          <!-- Footer Message -->
+          <p
+            style="
+              margin: 30px 0 25px 0;
+              color: #000;
+              font-size: 14px;
+              line-height: 1.4;
+            "
+          >
+            We'll send you a reminder before your appointment. Thank you for
+            choosing us. We appreciate your business!
+          </p>
 
-      <div class="addon-row">
-        <span>Addon 3</span>
-        <span>$36</span>
-      </div>
+          <p
+            style="
+              margin: 25px 0 8px 0;
+              font-weight: 600;
+              color: #000;
+              font-size: 14px;
+            "
+          >
+            Thank you!
+          </p>
+          <p style="margin: 0 0 40px 0; color: #000; font-size: 14px">
+            ASAP RoadWorthys
+          </p>
 
-      <div class="addon-row">
-        <span>Addon 4</span>
-        <span>$78</span>
-      </div>
+          <!-- Divider -->
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td
+                style="height: 1px; background-color: #ddd; margin: 20px 0"
+              ></td>
+            </tr>
+          </table>
 
-      <div class="summary-row">
-        <span>Subtotal</span>
-        <span>$313</span>
-      </div>
-
-      <div class="summary-row">
-        <span>Transportation</span>
-        <span>$25</span>
-      </div>
-
-      <div class="summary-row">
-        <span>Taxes</span>
-        <span>$72</span>
-      </div>
-
-      <div class="total-row">
-        <span>Total</span>
-        <span>$1000</span>
-      </div>
-
-      <div class="footer-text">
-        We'll send you a reminder before your appointment. Thank you for
-        choosing us. We appreciate your business!
-      </div>
-
-      <p class="thank-you">Thank you!</p>
-      <p class="company-name">ASAP RoadWorthys</p>
-
-      <div class="contact-section">
-        <span>Question? Contact our <a href="#">Customer Support</a></span>
-        <span>ASAP RoadWorthys</span>
-      </div>
-    </div>
+          <!-- Contact -->
+          <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            style="padding-top: 20px"
+          >
+            <tr>
+              <td style="color: #000; font-size: 14px">
+                Question? Contact our
+                <a href="#" style="color: #0066cc; text-decoration: none"
+                  >Customer Support</a
+                >
+              </td>
+              <td style="text-align: right; color: #000; font-size: 14px">
+                ASAP RoadWorthys
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
   </body>
 </html>
