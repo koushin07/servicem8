@@ -1,311 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Order Confirmation</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 40px 20px;
-            background-color: #f5f5f5;
-            line-height: 1.4;
-        }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #ffffff;
+        color: #000000;
+        line-height: 1.4;
+      }
 
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px 30px;
+      }
+
+      .logo {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .logo img {
+        max-width: 180px;
+        height: auto;
+      }
+
+      h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0 0 30px 0;
+        color: #000000;
+      }
+
+      .greeting {
+        margin-bottom: 8px;
+        color: #000000;
+        font-size: 16px;
+      }
+
+      .confirmation {
+        margin-bottom: 40px;
+        color: #000000;
+        font-size: 16px;
+      }
+
+      .divider {
+        height: 1px;
+        background-color: #e0e0e0;
+        margin: 30px 0;
+      }
+
+      .order-info {
+        display: table;
+        width: 100%;
+        margin-bottom: 40px;
+      }
+
+      .info-row {
+        display: table-row;
+      }
+
+      .info-cell {
+        display: table-cell;
+        width: 25%;
+        vertical-align: top;
+        padding-right: 15px;
+        padding-bottom: 20px;
+      }
+
+      .info-label {
+        color: #888888;
+        font-size: 14px;
+        margin-bottom: 8px;
+        font-weight: 400;
+      }
+
+      .info-value {
+        color: #000000;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 1.3;
+      }
+
+      .service-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 25px 0;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .service-info {
+        display: flex;
+        align-items: center;
+      }
+
+      .service-icon {
+        width: 20px;
+        height: 20px;
+        background-color: #000000;
+        border-radius: 50%;
+        margin-right: 15px;
+        position: relative;
+      }
+
+      .service-icon::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 8px;
+        height: 8px;
+        background-color: #ffffff;
+        border-radius: 50%;
+      }
+
+      .service-details h3 {
+        margin: 0 0 5px 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #000000;
+      }
+
+      .service-details p {
+        margin: 0;
+        color: #888888;
+        font-size: 14px;
+      }
+
+      .service-price {
+        font-size: 24px;
+        font-weight: 700;
+        color: #000000;
+      }
+
+      .addon-section {
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .addon-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        color: #000000;
+        font-size: 16px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .addon-item:last-child {
+        border-bottom: none;
+      }
+
+      .addon-name {
+        font-weight: 400;
+      }
+
+      .addon-price {
+        font-weight: 400;
+      }
+
+      .summary-section {
+        padding-top: 25px;
+      }
+
+      .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        color: #000000;
+        font-size: 16px;
+      }
+
+      .summary-item.total {
+        border-top: 2px solid #000000;
+        margin-top: 15px;
+        padding-top: 20px;
+        font-weight: 700;
+        font-size: 20px;
+      }
+
+      .footer-message {
+        margin: 50px 0 40px 0;
+        color: #000000;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .thank-you {
+        margin: 0 0 15px 0;
+        font-weight: 600;
+        color: #000000;
+        font-size: 16px;
+      }
+
+      .company-name {
+        margin-bottom: 50px;
+        color: #000000;
+        font-weight: 500;
+        font-size: 16px;
+      }
+
+      .contact-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 25px;
+        border-top: 1px solid #e0e0e0;
+        color: #000000;
+        font-size: 16px;
+      }
+
+      .contact-info a {
+        color: #007bff;
+        text-decoration: none;
+      }
+
+      @media (max-width: 600px) {
         .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .logo img {
-            max-width: 200px;
-        }
-
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin: 0 0 20px 0;
-            color: #000;
-        }
-
-        .greeting {
-            margin-bottom: 5px;
-            color: #000;
-        }
-
-        .confirmation {
-            margin-bottom: 30px;
-            color: #000;
-        }
-
-        .divider {
-            height: 1px;
-            background-color: #ddd;
-            margin: 30px 0;
+          padding: 30px 20px;
         }
 
         .order-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+          display: block;
         }
 
-        .info-group {
-            flex: 1;
-            min-width: 120px;
-            margin-right: 20px;
-            margin-bottom: 15px;
-        }
-
-        .info-group:last-child {
-            margin-right: 0;
-        }
-
-        .info-label {
-            color: #999;
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-
-        .info-value {
-            color: #000;
-            font-weight: 500;
+        .info-cell {
+          display: block;
+          width: 100%;
+          margin-bottom: 25px;
         }
 
         .service-section {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 0;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .service-info {
-            display: flex;
-            align-items: center;
-        }
-
-        .service-icon {
-            width: 24px;
-            height: 24px;
-            background-color: #000;
-            border-radius: 50%;
-            margin-right: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .service-details h3 {
-            margin: 0 0 5px 0;
-            font-size: 16px;
-            font-weight: 600;
-            color: #000;
-        }
-
-        .service-details p {
-            margin: 0;
-            color: #999;
-            font-size: 14px;
+          flex-direction: column;
+          align-items: flex-start;
+          text-align: left;
         }
 
         .service-price {
-            font-size: 18px;
-            font-weight: 600;
-            color: #000;
-        }
-
-        .addon-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px solid #ddd;
-            color: #000;
-        }
-
-        .addon-item:last-of-type {
-            border-bottom: 1px solid #ddd;
-        }
-
-        .summary-section {
-            margin-top: 20px;
-        }
-
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            color: #000;
-        }
-
-        .summary-item.total {
-            border-top: 2px solid #000;
-            margin-top: 10px;
-            padding-top: 15px;
-            font-weight: 700;
-            font-size: 18px;
-        }
-
-        .footer-message {
-            margin: 40px 0;
-            color: #000;
-        }
-
-        .thank-you {
-            margin: 30px 0 10px 0;
-            font-weight: 600;
-            color: #000;
-        }
-
-        .company-name {
-            margin-bottom: 40px;
-            color: #000;
-            font-weight: 500;
+          margin-top: 15px;
+          align-self: flex-end;
         }
 
         .contact-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            color: #000;
+          flex-direction: column;
+          text-align: center;
+          gap: 10px;
         }
-
-        .contact-info a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        @media (max-width: 600px) {
-            .order-info {
-                flex-direction: column;
-            }
-
-            .info-group {
-                margin-right: 0;
-            }
-
-            .contact-info {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .contact-info .company-name {
-                margin-top: 10px;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="logo">
-            <!-- Logo placeholder - replace src with actual logo URL -->
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'%3E%3Ctext x='10' y='35' font-family='Arial, sans-serif' font-size='20' font-weight='bold'%3EASAP%3C/text%3E%3Ctext x='80' y='35' font-family='Arial, sans-serif' font-size='20' font-weight='bold'%3EROADWORTHYS%3C/text%3E%3Ctext x='10' y='50' font-family='Arial, sans-serif' font-size='12' fill='%23ff9500'%3EWe Come To You%3C/text%3E%3C/svg%3E" alt="ASAP RoadWorthys">
+      <div class="logo">
+        <!-- Replace this placeholder with your actual logo URL -->
+        <img
+          src="https://via.placeholder.com/180x60/ffffff/000000?text=ASAP+RoadWorthys"
+          alt="ASAP RoadWorthys"
+        />
+      </div>
+
+      <h1>Your Order Confirmation!</h1>
+
+      <p class="greeting">Hi John,</p>
+      <p class="confirmation">Your Order has been confirmed.</p>
+
+      <div class="divider"></div>
+
+      <div class="order-info">
+        <div class="info-row">
+          <div class="info-cell">
+            <div class="info-label">Order Date</div>
+            <div class="info-value">
+              September 16, 2025<br />9:00 - 10:00 AM
+            </div>
+          </div>
+          <div class="info-cell">
+            <div class="info-label">Order ID</div>
+            <div class="info-value">BK5549513</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-label">Payment</div>
+            <div class="info-value">VISA</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-label">Address</div>
+            <div class="info-value">12 George Street, Sydney NSW 2000</div>
+          </div>
         </div>
+      </div>
 
-        <h1>Your Order Confirmation!</h1>
-
-        <p class="greeting">Hi John,</p>
-        <p class="confirmation">Your Order has been confirmed.</p>
-
-        <div class="divider"></div>
-
-        <div class="order-info">
-            <div class="info-group">
-                <div class="info-label">Order Date</div>
-                <div class="info-value">September 16, 2025<br>9:00 - 10:00 AM</div>
-            </div>
-
-            <div class="info-group">
-                <div class="info-label">Order ID</div>
-                <div class="info-value">BK5549513</div>
-            </div>
-
-            <div class="info-group">
-                <div class="info-label">Payment</div>
-                <div class="info-value">VISA</div>
-            </div>
-
-            <div class="info-group">
-                <div class="info-label">Address</div>
-                <div class="info-value">12 George Street, Sydney NSW 2000</div>
-            </div>
+      <div class="service-section">
+        <div class="service-info">
+          <div class="service-icon"></div>
+          <div class="service-details">
+            <h3>Mobile Service</h3>
+            <p>Duration 45-90 Minutes</p>
+          </div>
         </div>
+        <div class="service-price">$199</div>
+      </div>
 
-        <div class="divider"></div>
-
-        <div class="service-section">
-            <div class="service-info">
-                <div class="service-icon">📍</div>
-                <div class="service-details">
-                    <h3>Mobile Service</h3>
-                    <p>Duration 45-90 Minutes</p>
-                </div>
-            </div>
-            <div class="service-price">$199</div>
+      <div class="addon-section">
+        <div class="addon-item">
+          <span class="addon-name">Addon 2</span>
+          <span class="addon-price">$20</span>
         </div>
 
         <div class="addon-item">
-            <span>Addon 2</span>
-            <span>$20</span>
+          <span class="addon-name">Addon 3</span>
+          <span class="addon-price">$36</span>
         </div>
 
         <div class="addon-item">
-            <span>Addon 3</span>
-            <span>$36</span>
+          <span class="addon-name">Addon 4</span>
+          <span class="addon-price">$78</span>
+        </div>
+      </div>
+
+      <div class="summary-section">
+        <div class="summary-item">
+          <span>Subtotal</span>
+          <span>$313</span>
         </div>
 
-        <div class="addon-item">
-            <span>Addon 4</span>
-            <span>$78</span>
+        <div class="summary-item">
+          <span>Transportation</span>
+          <span>$25</span>
         </div>
 
-        <div class="divider"></div>
-
-        <div class="summary-section">
-            <div class="summary-item">
-                <span>Subtotal</span>
-                <span>$313</span>
-            </div>
-
-            <div class="summary-item">
-                <span>Transportation</span>
-                <span>$25</span>
-            </div>
-
-            <div class="summary-item">
-                <span>Taxes</span>
-                <span>$72</span>
-            </div>
-
-            <div class="summary-item total">
-                <span>Total</span>
-                <span>$1000</span>
-            </div>
+        <div class="summary-item">
+          <span>Taxes</span>
+          <span>$72</span>
         </div>
 
-        <div class="divider"></div>
-
-        <p class="footer-message">We'll send you a reminder before your appointment. Thank you for choosing us. We appreciate your business!</p>
-
-        <p class="thank-you">Thank you!</p>
-        <p class="company-name">ASAP RoadWorthys</p>
-
-        <div class="contact-info">
-            <span>Question? Contact our <a href="#">Customer Support</a></span>
-            <span>ASAP RoadWorthys</span>
+        <div class="summary-item total">
+          <span>Total</span>
+          <span>$1000</span>
         </div>
+      </div>
+
+      <div class="footer-message">
+        We'll send you a reminder before your appointment. Thank you for
+        choosing us. We appreciate your business!
+      </div>
+
+      <p class="thank-you">Thank you!</p>
+      <p class="company-name">ASAP RoadWorthys</p>
+
+      <div class="contact-info">
+        <span>Question? Contact our <a href="#">Customer Support</a></span>
+        <span>ASAP RoadWorthys</span>
+      </div>
     </div>
-</body>
+  </body>
 </html>
