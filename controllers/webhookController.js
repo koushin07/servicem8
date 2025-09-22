@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
 
-
 function authHeaders() {
   const apiKey = process.env.SERVICEM8_API_KEY;
   return {
