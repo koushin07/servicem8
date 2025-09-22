@@ -55,11 +55,13 @@ const handleSendEmailIfCompleted = async (req, res) => {
           // Load your HTML template
           const templatePath = path.join(
             __dirname,
-            "template",
+            "..",
+            "templates",
             "confirmation.html"
           );
-          const htmlBody = fs.readFileSync(templatePath, "utf8");
 
+          const htmlBody = fs.readFileSync(templatePath, "utf8");
+console.log("the path to the template is", templatePath);
           await axios.post(
             "https://api.servicem8.com/platform_service_email",
             {
