@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const path = require("path");
 const handlebars = require("handlebars");
+const SibApiV3Sdk = require("sib-api-v3-sdk");
 
 function authHeaders() {
   const apiKey = process.env.SERVICEM8_API_KEY;
@@ -12,6 +13,54 @@ function authHeaders() {
     "Content-Type": "application/json",
   };
 }
+
+const handleBrevoEmail = async (req, res) => {
+  try {
+    const { to, subject, name } = req.body;
+
+    // ✅ Setup Brevo client
+    const defaultClient = SibApiV3Sdk.ApiClient.instance;
+    const apiKey = defaultClient.authentications["api-key"];
+    apiKey.apiKey = process.env.BREVO_API_KEY;
+
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+    // ✅ Load & compile template
+    const templatePath = path.join(
+      __dirname,
+      "..",
+      "templates",
+      "confirmation.html"
+    );
+    const templateSource = fs.readFileSync(templatePath, "utf8");
+    const compiledTemplate = handlebars.compile(templateSource);
+    const htmlBody = compiledTemplate({
+      customerName: name,
+    });
+
+    // ✅ Build email payload
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail({
+      sender: {
+        email: "canaresmiko3@gmail.com", // must be verified in Brevo
+        name: "My Test App",
+      },
+      to: [{ email: to, name }],
+      subject,
+      htmlContent: htmlBody,
+    });
+
+    // ✅ Send email
+    const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("✅ Email sent:", response);
+
+    res.json({ success: true, message: "Email sent successfully", response });
+  } catch (error) {
+    console.error("❌ Email failed:", error.response?.text || error.message);
+    res
+      .status(500)
+      .json({ success: false, error: error.response?.text || error.message });
+  }
+};
 
 const handleSendEmailIfCompleted = async (req, res) => {
   try {
@@ -155,5 +204,4 @@ const handleSendEmailIfCompleted = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-module.exports = { handleSendEmailIfCompleted };
+module.exports = { handleSendEmailIfCompleted, handleBrevoEmail };
