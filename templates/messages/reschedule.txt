@@ -1,0 +1,2 @@
+Hi [FirstName], your booking #[Booking#] has been cancelled. Need to reschedule? Visit asaprwc.au/portal & reschedule in under 60 secs
+

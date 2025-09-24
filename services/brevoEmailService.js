@@ -8,7 +8,7 @@ function buildBrevoTemplatePayload({ to, subject, name, brevoTemplateId, templat
     to: [{ email: to, name }],
     subject,
     templateId: brevoTemplateId,
-    params: templateParams || { customerName: name || "" },
+    params:  {...templateParams},
     replyTo: { email: "support@asaproadworthys.com.au", name: "Support" },
     headers: { "X-Client": "asap-app", "X-Ref": String(Date.now()) },
     tags: ["asap-test"],

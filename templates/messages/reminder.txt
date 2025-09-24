@@ -1,0 +1,2 @@
+[FirstName], your booking #[Booking#] is nearly here.
+Head to asaprwc.au/portal for LIVE updates & how to prepare.
