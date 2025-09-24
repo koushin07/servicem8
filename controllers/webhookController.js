@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const handlebars = require("handlebars");
 const SibApiV3Sdk = require("sib-api-v3-sdk");
+const brevoEmailService = require("../services/brevoEmailService");
 
 function authHeaders() {
   const apiKey = process.env.SERVICEM8_API_KEY;
@@ -14,9 +15,11 @@ function authHeaders() {
   };
 }
 
+
+
 const handleBrevoEmail = async (req, res) => {
   try {
-    const { to, subject, name } = req.body;
+    const { to, subject, name, useBrevoTemplate, brevoTemplateId, templateParams } = req.body;
 
     // --- Guard rails ---
     if (!process.env.BREVO_API_KEY) throw new Error("Missing BREVO_API_KEY");
@@ -34,26 +37,12 @@ const handleBrevoEmail = async (req, res) => {
     console.log("🔑 Using Brevo account:", acc.companyName, "-", acc.email);
     console.log("🔑 API key tail:", (process.env.BREVO_API_KEY || "").slice(-8));
 
-    // --- Render HTML (if you're not using a Brevo Template) ---
-    const templatePath = path.join(__dirname, "..", "templates", "confirmation.html");
-    const templateSource = fs.readFileSync(templatePath, "utf8");
-    const htmlBody = handlebars.compile(templateSource)({
-      customerName: name || "",
-    });
-
-    // --- Build payload ---
-    const sendSmtpEmail = {
-      sender: {
-        email: "no-reply@asaproadworthys.com.au", // must exist in Brevo "Senders"
-        name: "ASAP Roadworthys",
-      },
-      to: [{ email: to, name }],
-      subject,
-      htmlContent: htmlBody,
-      replyTo: { email: "support@asaproadworthys.com.au", name: "Support" },
-      headers: { "X-Client": "asap-app", "X-Ref": String(Date.now()) },
-      tags: ["asap-test"],
-    };
+    let sendSmtpEmail;
+    if (useBrevoTemplate && brevoTemplateId) {
+      sendSmtpEmail = brevoEmailService.buildBrevoTemplatePayload({ to, subject, name, brevoTemplateId, templateParams });
+    } else {
+      sendSmtpEmail = brevoEmailService.buildCustomHtmlPayload({ to, subject, name });
+    }
 
     // --- Send ---
     const response = await api.sendTransacEmail(sendSmtpEmail);
