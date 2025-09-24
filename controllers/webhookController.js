@@ -18,47 +18,72 @@ const handleBrevoEmail = async (req, res) => {
   try {
     const { to, subject, name } = req.body;
 
-    // ✅ Setup Brevo client
+    // --- Guard rails ---
+    if (!process.env.BREVO_API_KEY) throw new Error("Missing BREVO_API_KEY");
+    if (!to || !subject) throw new Error("Missing 'to' or 'subject'");
+
+    // --- Setup Brevo client ---
     const defaultClient = SibApiV3Sdk.ApiClient.instance;
-    const apiKey = defaultClient.authentications["api-key"];
-    apiKey.apiKey = process.env.BREVO_API_KEY;
+    defaultClient.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
 
-    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+    const api = new SibApiV3Sdk.TransactionalEmailsApi();
+    const accountApi = new SibApiV3Sdk.AccountApi();
 
-    // ✅ Load & compile template
-    const templatePath = path.join(
-      __dirname,
-      "..",
-      "templates",
-      "confirmation.html"
-    );
+    // --- Confirm which account this API key belongs to ---
+    const acc = await accountApi.getAccount();
+    console.log("🔑 Using Brevo account:", acc.companyName, "-", acc.email);
+    console.log("🔑 API key tail:", (process.env.BREVO_API_KEY || "").slice(-8));
+
+    // --- Render HTML (if you're not using a Brevo Template) ---
+    const templatePath = path.join(__dirname, "..", "templates", "confirmation.html");
     const templateSource = fs.readFileSync(templatePath, "utf8");
-    const compiledTemplate = handlebars.compile(templateSource);
-    const htmlBody = compiledTemplate({
-      customerName: name,
+    const htmlBody = handlebars.compile(templateSource)({
+      customerName: name || "",
     });
 
-    // ✅ Build email payload
-    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail({
+    // --- Build payload ---
+    const sendSmtpEmail = {
       sender: {
-        email: "canaresmiko3@gmail.com", // must be verified in Brevo
-        name: "My Test App",
+        email: "no-reply@asaproadworthys.com.au", // must exist in Brevo "Senders"
+        name: "ASAP Roadworthys",
       },
       to: [{ email: to, name }],
       subject,
       htmlContent: htmlBody,
-    });
+      replyTo: { email: "support@asaproadworthys.com.au", name: "Support" },
+      headers: { "X-Client": "asap-app", "X-Ref": String(Date.now()) },
+      tags: ["asap-test"],
+    };
 
-    // ✅ Send email
-    const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    // --- Send ---
+    const response = await api.sendTransacEmail(sendSmtpEmail);
     console.log("✅ Email sent:", response);
+
+    // --- Fetch logs for this recipient ---
+    const events = await api.getTransacEmailsList({
+      email: to,
+      sort: "desc",
+      limit: 5,
+    });
+    console.log("📬 Recent events for", to, ":", JSON.stringify(events, null, 2));
+
+    // --- Fetch email content by messageId ---
+    try {
+      const content = await api.getTransacEmailContent(response.messageId);
+      console.log("📧 Content meta:", {
+        subject: content.subject,
+        date: content.date,
+        events: content.events,
+      });
+    } catch (err) {
+      console.warn("⚠️ Could not fetch email content by messageId:", err.message);
+    }
 
     res.json({ success: true, message: "Email sent successfully", response });
   } catch (error) {
-    console.error("❌ Email failed:", error.response?.text || error.message);
-    res
-      .status(500)
-      .json({ success: false, error: error.response?.text || error.message });
+    const msg = error?.response?.text || error?.message || String(error);
+    console.error("❌ Email failed:", msg);
+    res.status(500).json({ success: false, error: msg });
   }
 };
 
