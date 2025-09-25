@@ -167,32 +167,19 @@ const handleSendEmailIfCompleted = async (req, res) => {
         const smsNumber = primaryContact.mobile || primaryContact.phone;
         try {
           console.log(`Attempting to send SMS to ${smsNumber}`);
+          // Read SMS template from file
+          const smsTemplatePath = path.join(__dirname, "..", "templates", "messages", "confirmation.txt");
+          let smsTemplate = fs.readFileSync(smsTemplatePath, "utf8");
+          // Replace placeholders with dynamic values
+          smsTemplate = smsTemplate
+            .replace(/\[FirstName\]/g, primaryContact.first || "")
+            .replace(/\[Booking#\]/g, existingJob.id || "");
+
           await axios.post(
             "https://api.servicem8.com/platform_service_sms",
             {
               to: smsNumber,
-              message: `
-              How did we go?
-
-              We hope you're thrilled with the service you received from ASAP Roadworthys! Your opinion matters greatly to us and helps us ensure we're always delivering top-notch service. Could you spare a minute to share your experience?
-
-              Share Your Experience: https://bit.ly/feedseq
-
-              It's quick and easy—just click the button above to get started. Your feedback is invaluable and helps us improve every day.
-
-              Thank you for choosing ASAP Roadworthys, and we look forward to serving you again!
-
-              Warm regards,
-
-              The ASAP Roadworthys Team
-
-              FOR MORE INFORMATION
-              Call Now: (07) 5611 7044 or visit https://www.asaproadworthys.com.au
-
-              FULL TERMS AND CONDITIONS
-              Terms and Conditions: https://asaprwc.com/TCs
-              Terms of Inspection: https://asaprwc.com/TOI
-              `,
+              message: smsTemplate,
               regardingJobUUID: jobUuid,
             },
             { headers: authHeaders() }

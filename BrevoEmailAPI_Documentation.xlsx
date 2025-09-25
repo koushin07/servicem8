@@ -1,0 +1,75 @@
+API Endpoint Documentation: handleBrevoEmail
+============================================
+
+Overview
+--------
+This document describes the payloads and integration details for the `handleBrevoEmail` endpoint, which allows sending transactional emails using either a custom HTML template or a Brevo (Sendinblue) template.
+
+Endpoint
+--------
+POST /your-endpoint-path (as configured in your routes)
+
+Required Environment Variables
+-----------------------------
+- BREVO_API_KEY: Your Brevo (Sendinblue) API key
+
+Payloads
+--------
+
+1. Using Custom HTML Template
+----------------------------
+```
+{
+  "to": "recipient@example.com",
+  "subject": "Welcome to ASAP Roadworthys!",
+  "name": "John Doe"
+}
+```
+- `to` (string): Recipient's email address (required)
+- `subject` (string): Email subject (required)
+- `name` (string): Recipient's name (optional, used in template)
+
+2. Using Brevo Template
+-----------------------
+```
+{
+  "to": "recipient@example.com",
+  "subject": "Welcome to ASAP Roadworthys!",
+  "name": "John Doe",
+  "useBrevoTemplate": true,
+  "brevoTemplateId": 1234567,
+  "templateParams": {
+    "customerName": "John Doe",
+    "customField": "Some Value"
+  }
+}
+```
+- `to` (string): Recipient's email address (required)
+- `subject` (string): Email subject (required)
+- `name` (string): Recipient's name (optional, can be used in templateParams)
+- `useBrevoTemplate` (boolean): Set to true to use a Brevo template
+- `brevoTemplateId` (number): The Brevo template ID to use (required if useBrevoTemplate is true)
+- `templateParams` (object): Key-value pairs for template variables (optional, but recommended)
+
+Response
+--------
+- On success: `{ success: true, message: "Email sent successfully", response: <Brevo API response> }`
+- On error: `{ success: false, error: <error message> }`
+
+3rd Party Integration Details
+----------------------------
+- Brevo (Sendinblue) Transactional Email API is used.
+- The sender email (no-reply@asaproadworthys.com.au) must be a validated sender in Brevo.
+- The reply-to email is set to support@asaproadworthys.com.au.
+- Custom headers and tags are included for tracking.
+- If using a Brevo template, ensure the template is active and the template variables match those in `templateParams`.
+
+Other Notes
+-----------
+- The endpoint also fetches recent email events and logs them for debugging.
+- If using the custom HTML template, the file `templates/confirmation.html` is used and rendered with Handlebars.
+- All errors are logged and returned in the response.
+
+Contact
+-------
+For further integration help, contact the ASAP Roadworthys dev team.

@@ -1,0 +1,2 @@
+Hi [CustomerFirstName], [TechName] is on the way, arriving in [EtaArrivalTime].
+For more info or to chat to our team, visit asaprwc.au/portal

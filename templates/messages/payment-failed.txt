@@ -1,0 +1,3 @@
+Hi [FirstName], payment failed for booking #[Booking#].
+No stress, we saved your booking details.
+Finish payment anytime at asaprwc.au/portal
