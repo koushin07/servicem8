@@ -5,6 +5,7 @@ const path = require("path");
 const handlebars = require("handlebars");
 const SibApiV3Sdk = require("sib-api-v3-sdk");
 const brevoEmailService = require("../services/brevoEmailService");
+const { isSuppressed } = require("./unsubscribeController");
 
 function authHeaders() {
   const apiKey = process.env.SERVICEM8_API_KEY;
@@ -21,9 +22,13 @@ const handleBrevoEmail = async (req, res) => {
   try {
     const { to, subject, name, useBrevoTemplate, brevoTemplateId, templateParams } = req.body;
 
+
     // --- Guard rails ---
     if (!process.env.BREVO_API_KEY) throw new Error("Missing BREVO_API_KEY");
     if (!to || !subject) throw new Error("Missing 'to' or 'subject'");
+    if (isSuppressed(to)) {
+      return res.status(200).json({ success: false, error: "Recipient has unsubscribed." });
+    }
 
     // --- Setup Brevo client ---
     const defaultClient = SibApiV3Sdk.ApiClient.instance;
