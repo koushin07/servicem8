@@ -37,11 +37,38 @@ const handleBrevoEmail = async (req, res) => {
     console.log("🔑 Using Brevo account:", acc.companyName, "-", acc.email);
     console.log("🔑 API key tail:", (process.env.BREVO_API_KEY || "").slice(-8));
 
+
+    // --- ICS attachment logic ---
+    let icsAttachment = null;
+    // Only attach ICS for booking confirmations (customize as needed)
+    if (subject && subject.toLowerCase().includes('booking')) {
+      // Example merge fields for ICS
+      const mergeFields = {
+        customerName: name || "",
+        bookingDate: templateParams?.bookingDate || "",
+        bookingTime: templateParams?.bookingTime || "",
+        jobAddress: templateParams?.jobAddress || "",
+      };
+      function generateICS(fields) {
+        return `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Booking Confirmation\nDTSTART:${fields.bookingDate}T${fields.bookingTime}\nDTEND:${fields.bookingDate}T${fields.bookingTime}\nLOCATION:${fields.jobAddress}\nDESCRIPTION:Booking for ${fields.customerName}\nEND:VEVENT\nEND:VCALENDAR`;
+      }
+      const icsContent = generateICS(mergeFields);
+      icsAttachment = {
+        name: "booking.ics",
+        content: Buffer.from(icsContent).toString('base64'),
+        contentType: "text/calendar"
+      };
+    }
+
     let sendSmtpEmail;
     if (useBrevoTemplate && brevoTemplateId) {
       sendSmtpEmail = brevoEmailService.buildBrevoTemplatePayload({ to, subject, name, brevoTemplateId, templateParams });
     } else {
       sendSmtpEmail = brevoEmailService.buildCustomHtmlPayload({ to, subject, name });
+    }
+    // Attach ICS if generated
+    if (icsAttachment) {
+      sendSmtpEmail.attachment = [icsAttachment];
     }
 
     // --- Send ---
