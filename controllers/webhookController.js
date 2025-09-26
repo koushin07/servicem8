@@ -87,6 +87,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
       { headers: authHeaders() }
     );
 
+
     console.log("New Trigger", existingJob.status);
 
     if (existingJob.status === "Completed") {
@@ -129,12 +130,48 @@ const handleSendEmailIfCompleted = async (req, res) => {
           const templateSource = fs.readFileSync(templatePath, "utf8");
           const compiledTemplate = handlebars.compile(templateSource);
 
-          // Inject dynamic data
-          const htmlBody = compiledTemplate({
-            customerName: primaryContact.first,
-            jobAddress: existingJob.job_address,
+          // Merge fields for customer, booking, technician
+          const technician = existingJob.allocated_staff ? existingJob.allocated_staff[0] : {};
+          const mergeFields = {
+            customerName: primaryContact.first || "",
+            customerEmail: primaryContact.email || "",
+            jobAddress: existingJob.job_address || "",
             completedDate: new Date().toLocaleDateString(),
+            bookingId: existingJob.id || "",
+            bookingDate: existingJob.start_date || "",
+            bookingTime: existingJob.start_time || "",
+            technicianName: technician.display_name || "",
+            technicianPhone: technician.phone || "",
+            // Add more fields as needed
+          };
+
+          // iCal/ICS attachment for booking confirmations
+          function generateICS(mergeFields) {
+            // Basic ICS content, expand as needed
+            return `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Booking Confirmation\nDTSTART:${mergeFields.bookingDate}T${mergeFields.bookingTime}\nDTEND:${mergeFields.bookingDate}T${mergeFields.bookingTime}\nLOCATION:${mergeFields.jobAddress}\nDESCRIPTION:Booking for ${mergeFields.customerName}\nEND:VEVENT\nEND:VCALENDAR`;
+          }
+
+          // Google Calendar quick-add link
+          function getGoogleCalendarLink(mergeFields) {
+            const base = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+            const params = [
+              `text=Booking+Confirmation`,
+              `dates=${mergeFields.bookingDate.replace(/-/g, '')}T${mergeFields.bookingTime.replace(/:/g, '')}00/${mergeFields.bookingDate.replace(/-/g, '')}T${mergeFields.bookingTime.replace(/:/g, '')}00`,
+              `details=Booking+for+${encodeURIComponent(mergeFields.customerName)}`,
+              `location=${encodeURIComponent(mergeFields.jobAddress)}`
+            ];
+            return base + '&' + params.join('&');
+          }
+
+          // Inject dynamic data and calendar links
+          const htmlBody = compiledTemplate({
+            ...mergeFields,
+            googleCalendarLink: getGoogleCalendarLink(mergeFields),
           });
+
+          // Prepare ICS attachment (as base64 for ServiceM8, if supported)
+          const icsContent = generateICS(mergeFields);
+          // TODO: Attach ICS file if ServiceM8 supports attachments
 
           console.log(
             "📨 Sending ServiceM8 email with template:",
@@ -146,9 +183,10 @@ const handleSendEmailIfCompleted = async (req, res) => {
             "https://api.servicem8.com/platform_service_email",
             {
               to: primaryContact.email,
-              subject: `Job Completed: ${existingJob.job_address}`,
+              subject: `Job Completed: ${mergeFields.jobAddress}`,
               htmlBody,
               regardingJobUUID: jobUuid,
+              // icsAttachment: icsContent, // Uncomment if ServiceM8 supports
             },
             { headers: authHeaders() }
           );
@@ -170,10 +208,33 @@ const handleSendEmailIfCompleted = async (req, res) => {
           // Read SMS template from file
           const smsTemplatePath = path.join(__dirname, "..", "templates", "messages", "confirmation.txt");
           let smsTemplate = fs.readFileSync(smsTemplatePath, "utf8");
-          // Replace placeholders with dynamic values
-          smsTemplate = smsTemplate
-            .replace(/\[FirstName\]/g, primaryContact.first || "")
-            .replace(/\[Booking#\]/g, existingJob.id || "");
+          // Merge fields for customer, booking, technician
+          const smsTechnician = existingJob.allocated_staff ? existingJob.allocated_staff[0] : {};
+          const smsMergeFields = {
+            FirstName: primaryContact.first || "",
+            LastName: primaryContact.last || "",
+            'Booking#': existingJob.id || "",
+            BookingDate: existingJob.start_date || "",
+            BookingTime: existingJob.start_time || "",
+            Address: existingJob.job_address || "",
+            TechnicianName: smsTechnician.display_name || "",
+            TechnicianPhone: smsTechnician.phone || "",
+            // Add more fields as needed
+          };
+
+          // URL shortener placeholder for tracking links
+          function shortenUrl(url) {
+            // TODO: Integrate with a real URL shortener service
+            return url;
+          }
+
+          // Replace all merge fields in template
+          smsTemplate = smsTemplate.replace(/\[([A-Za-z0-9#]+)\]/g, (match, p1) => smsMergeFields[p1] || "");
+
+          // Example: Replace [TrackingLink] with a shortened URL if present
+          if (smsTemplate.includes('[TrackingLink]')) {
+            smsTemplate = smsTemplate.replace('[TrackingLink]', shortenUrl('https://your-tracking-link.com'));
+          }
 
           await axios.post(
             "https://api.servicem8.com/platform_service_sms",
