@@ -1,4 +1,7 @@
 
+const path = require("path");
+const fs = require("fs");
+const handlebars = require("handlebars");
 function buildBrevoTemplatePayload({ to, subject, name, brevoTemplateId, templateParams }) {
   return {
     sender: {
