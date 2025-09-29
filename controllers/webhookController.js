@@ -439,6 +439,8 @@ const handleSendEmailIfCompleted = async (req, res) => {
             TechnicianPhone: smsTechnician.phone || "",
             // Add more fields as needed
           };
+          // Debug: Log all merge fields before template replacement
+          console.log("🔍 SMS Merge Fields:", JSON.stringify(smsMergeFields, null, 2));
 
           // Integrate Bitly for URL shortening
           const { shortenUrl } = require("../services/bitlyService");
@@ -448,6 +450,8 @@ const handleSendEmailIfCompleted = async (req, res) => {
             /\[([A-Za-z0-9#]+)\]/g,
             (match, p1) => smsMergeFields[p1] || ""
           );
+        // Debug: Log template after merge field replacement, before Bitly
+        console.log("📝 SMS Template after merge field replacement:", smsTemplate);
 
           // Example: Replace [TrackingLink] with a shortened URL if present
           if (smsTemplate.includes("[TrackingLink]")) {
@@ -459,8 +463,14 @@ const handleSendEmailIfCompleted = async (req, res) => {
               customName += `-${primaryContact.first.toLowerCase()}`;
             // Remove spaces and non-url chars
             customName = customName.replace(/[^a-zA-Z0-9\-]/g, "");
-            const shortUrl = await shortenUrl(longUrl, customName);
-            smsTemplate = smsTemplate.replace("[TrackingLink]", shortUrl);
+            try {
+              const shortUrl = await shortenUrl(longUrl, customName);
+              console.log("🔗 Bitly response for ", customName, ":", shortUrl);
+              smsTemplate = smsTemplate.replace("[TrackingLink]", shortUrl);
+            } catch (bitlyErr) {
+              console.error("❌ Bitly error for ", customName, ":", bitlyErr.message || bitlyErr);
+              smsTemplate = smsTemplate.replace("[TrackingLink]", "[BitlyError]");
+            }
           }
 
           // Retry & backoff logic
@@ -473,6 +483,8 @@ const handleSendEmailIfCompleted = async (req, res) => {
             message: smsTemplate,
             regardingJobUUID: jobUuid,
           });
+        // Debug: Log final SMS message after all replacements
+        console.log("✅ Final SMS message:", smsTemplate);
           console.log(existingJob)
           return res.status(200).json({
             to: smsNumber,
