@@ -451,7 +451,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
 
           // Example: Replace [TrackingLink] with a shortened URL if present
           if (smsTemplate.includes("[TrackingLink]")) {
-            const longUrl = "https://your-tracking-link.com";
+            const longUrl = "https://www.asaproadworthys.com.au/.well-known/sgcaptcha/?r=%2F&y=ipr:120.28.252.170:1759109027.849";
             // Use a descriptive name: e.g. 'asap-job-<jobId>-<firstName>'
             let customName = "asap";
             if (existingJob.id) customName += `-job-${existingJob.id}`;
