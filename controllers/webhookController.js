@@ -240,11 +240,15 @@ const handleSendEmailIfCompleted = async (req, res) => {
         function isValidPhone(phone) {
           return /^\+\d{10,15}$/.test(phone);
         }
-        // Quiet hours (e.g., 8am-8pm)
+        // Quiet hours (Australia, 8pm-8am AEST)
         function isQuietHours() {
-          const now = new Date();
-          const hour = now.getHours();
-          return hour < 8 || hour >= 20;
+          // Convert to Australia Eastern Standard Time (UTC+10)
+          const nowUtc = new Date();
+          // Get UTC hour and add 10 for AEST
+          let hourAest = nowUtc.getUTCHours() + 10;
+          if (hourAest >= 24) hourAest -= 24;
+          // Block SMS from 8pm (20) to 8am (8)
+          return hourAest >= 20 || hourAest < 8;
         }
         // Rate limiting (in-memory, per number, per hour)
         const rateLimitMap = global._smsRateLimitMap || (global._smsRateLimitMap = {});
@@ -266,9 +270,89 @@ const handleSendEmailIfCompleted = async (req, res) => {
           return;
         }
         if (isQuietHours()) {
-          console.log(`Quiet hours: not sending SMS to ${smsNumber}`);
+          console.log(`Quiet hours: queueing SMS to ${smsNumber}`);
+          // Queue SMS for later sending
+          const queuePath = path.join(__dirname, "..", "globals", "smsQueue.json");
+          let queue = [];
+          try {
+            if (fs.existsSync(queuePath)) {
+              queue = JSON.parse(fs.readFileSync(queuePath, "utf8"));
+            }
+          } catch (e) {
+            console.error("Failed to read SMS queue", e);
+          }
+          queue.push({
+            to: smsNumber,
+            message: null, // will be set below
+            regardingJobUUID: jobUuid,
+            mergeFields: smsMergeFields,
+            templatePath: smsTemplatePath
+          });
+          // Prepare message for queue
+          let smsTemplate = fs.readFileSync(smsTemplatePath, "utf8");
+          smsTemplate = smsTemplate.replace(/\[([A-Za-z0-9#]+)\]/g, (match, p1) => smsMergeFields[p1] || "");
+          if (smsTemplate.includes('[TrackingLink]')) {
+            const longUrl = 'https://your-tracking-link.com';
+            let customName = 'asap';
+            if (existingJob.id) customName += `-job-${existingJob.id}`;
+            if (primaryContact.first) customName += `-${primaryContact.first.toLowerCase()}`;
+            customName = customName.replace(/[^a-zA-Z0-9\-]/g, '');
+            const { shortenUrl } = require("../services/bitlyService");
+            smsTemplate = smsTemplate.replace('[TrackingLink]', await shortenUrl(longUrl, customName));
+          }
+          queue[queue.length - 1].message = smsTemplate;
+          try {
+            fs.writeFileSync(queuePath, JSON.stringify(queue, null, 2));
+          } catch (e) {
+            console.error("Failed to write SMS queue", e);
+          }
           return;
         }
+// Function to process queued SMS messages (call this on a schedule or at startup)
+async function processSmsQueue() {
+  const queuePath = path.join(__dirname, "..", "globals", "smsQueue.json");
+  let queue = [];
+  try {
+    if (fs.existsSync(queuePath)) {
+      queue = JSON.parse(fs.readFileSync(queuePath, "utf8"));
+    }
+  } catch (e) {
+    console.error("Failed to read SMS queue", e);
+    return;
+  }
+  if (!queue.length) return;
+  // Only send if not quiet hours
+  function isQuietHours() {
+    const nowUtc = new Date();
+    let hourAest = nowUtc.getUTCHours() + 10;
+    if (hourAest >= 24) hourAest -= 24;
+    return hourAest >= 20 || hourAest < 8;
+  }
+  if (isQuietHours()) return;
+  const { shortenUrl } = require("../services/bitlyService");
+  for (const sms of queue) {
+    try {
+      await axios.post(
+        "https://api.servicem8.com/platform_service_sms",
+        {
+          to: sms.to,
+          message: sms.message,
+          regardingJobUUID: sms.regardingJobUUID,
+        },
+        { headers: authHeaders() }
+      );
+      console.log(`Queued SMS sent to ${sms.to}`);
+    } catch (err) {
+      console.error(`Failed to send queued SMS to ${sms.to}`, err.response?.data || err.message);
+    }
+  }
+  // Clear queue after sending
+  try {
+    fs.writeFileSync(queuePath, JSON.stringify([], null, 2));
+  } catch (e) {
+    console.error("Failed to clear SMS queue", e);
+  }
+}
         try {
           console.log(`Attempting to send SMS to ${smsNumber}`);
           // Read SMS template from file
