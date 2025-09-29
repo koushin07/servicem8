@@ -473,10 +473,12 @@ const handleSendEmailIfCompleted = async (req, res) => {
             message: smsTemplate,
             regardingJobUUID: jobUuid,
           });
+          console.log(existingJob)
           return res.staus(200).json({
             to: smsNumber,
             message: smsTemplate,
             regardingJobUUID: jobUuid,
+            existingJob
           })
           // while (attempt < maxAttempts && !sent) {
           //   try {
