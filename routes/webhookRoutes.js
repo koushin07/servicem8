@@ -3,6 +3,9 @@ const express = require('express');
 const router = express.Router();
 
 const { handleSendEmailIfCompleted, handleBrevoEmail } = require('../controllers/webhookController');
+const { shortenUrlEndpoint } = require('../controllers/bitlyController');
+// Bitly shortener test endpoint
+router.post('/shorten-url', shortenUrlEndpoint);
 const unsubscribeController = require('../controllers/unsubscribeController');
 const smsSuppressionController = require('../controllers/smsSuppressionController');
 

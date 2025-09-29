@@ -16,18 +16,24 @@ function authHeaders() {
   };
 }
 
-
-
 const handleBrevoEmail = async (req, res) => {
   try {
-    const { to, subject, name, useBrevoTemplate, brevoTemplateId, templateParams } = req.body;
-
+    const {
+      to,
+      subject,
+      name,
+      useBrevoTemplate,
+      brevoTemplateId,
+      templateParams,
+    } = req.body;
 
     // --- Guard rails ---
     if (!process.env.BREVO_API_KEY) throw new Error("Missing BREVO_API_KEY");
     if (!to || !subject) throw new Error("Missing 'to' or 'subject'");
     if (isSuppressed(to)) {
-      return res.status(200).json({ success: false, error: "Recipient has unsubscribed." });
+      return res
+        .status(200)
+        .json({ success: false, error: "Recipient has unsubscribed." });
     }
 
     // --- Setup Brevo client ---
@@ -40,13 +46,15 @@ const handleBrevoEmail = async (req, res) => {
     // --- Confirm which account this API key belongs to ---
     const acc = await accountApi.getAccount();
     console.log("🔑 Using Brevo account:", acc.companyName, "-", acc.email);
-    console.log("🔑 API key tail:", (process.env.BREVO_API_KEY || "").slice(-8));
-
+    console.log(
+      "🔑 API key tail:",
+      (process.env.BREVO_API_KEY || "").slice(-8)
+    );
 
     // --- ICS attachment logic ---
     let icsAttachment = null;
     // Only attach ICS for booking confirmations (customize as needed)
-    if (subject && subject.toLowerCase().includes('booking')) {
+    if (subject && subject.toLowerCase().includes("booking")) {
       // Example merge fields for ICS
       const mergeFields = {
         customerName: name || "",
@@ -60,16 +68,26 @@ const handleBrevoEmail = async (req, res) => {
       const icsContent = generateICS(mergeFields);
       icsAttachment = {
         name: "booking.ics",
-        content: Buffer.from(icsContent).toString('base64'),
-        contentType: "text/calendar"
+        content: Buffer.from(icsContent).toString("base64"),
+        contentType: "text/calendar",
       };
     }
 
     let sendSmtpEmail;
     if (useBrevoTemplate && brevoTemplateId) {
-      sendSmtpEmail = brevoEmailService.buildBrevoTemplatePayload({ to, subject, name, brevoTemplateId, templateParams });
+      sendSmtpEmail = brevoEmailService.buildBrevoTemplatePayload({
+        to,
+        subject,
+        name,
+        brevoTemplateId,
+        templateParams,
+      });
     } else {
-      sendSmtpEmail = brevoEmailService.buildCustomHtmlPayload({ to, subject, name });
+      sendSmtpEmail = brevoEmailService.buildCustomHtmlPayload({
+        to,
+        subject,
+        name,
+      });
     }
     // Attach ICS if generated
     if (icsAttachment) {
@@ -86,7 +104,12 @@ const handleBrevoEmail = async (req, res) => {
       sort: "desc",
       limit: 5,
     });
-    console.log("📬 Recent events for", to, ":", JSON.stringify(events, null, 2));
+    console.log(
+      "📬 Recent events for",
+      to,
+      ":",
+      JSON.stringify(events, null, 2)
+    );
 
     // --- Fetch email content by messageId ---
     try {
@@ -97,7 +120,10 @@ const handleBrevoEmail = async (req, res) => {
         events: content.events,
       });
     } catch (err) {
-      console.warn("⚠️ Could not fetch email content by messageId:", err.message);
+      console.warn(
+        "⚠️ Could not fetch email content by messageId:",
+        err.message
+      );
     }
 
     res.json({ success: true, message: "Email sent successfully", response });
@@ -118,7 +144,6 @@ const handleSendEmailIfCompleted = async (req, res) => {
       `https://api.servicem8.com/api_1.0/job/${jobUuid}.json`,
       { headers: authHeaders() }
     );
-
 
     console.log("New Trigger", existingJob.status);
 
@@ -148,7 +173,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
       //Sending email
 
       let emailSent = false;
-      if (primaryContact.email) {
+      if (primaryContact.email && false) {
         try {
           console.log(`Attempting to send email to ${primaryContact.email}`);
 
@@ -163,7 +188,9 @@ const handleSendEmailIfCompleted = async (req, res) => {
           const compiledTemplate = handlebars.compile(templateSource);
 
           // Merge fields for customer, booking, technician
-          const technician = existingJob.allocated_staff ? existingJob.allocated_staff[0] : {};
+          const technician = existingJob.allocated_staff
+            ? existingJob.allocated_staff[0]
+            : {};
           const mergeFields = {
             customerName: primaryContact.first || "",
             customerEmail: primaryContact.email || "",
@@ -185,14 +212,26 @@ const handleSendEmailIfCompleted = async (req, res) => {
 
           // Google Calendar quick-add link
           function getGoogleCalendarLink(mergeFields) {
-            const base = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+            const base =
+              "https://calendar.google.com/calendar/render?action=TEMPLATE";
             const params = [
               `text=Booking+Confirmation`,
-              `dates=${mergeFields.bookingDate.replace(/-/g, '')}T${mergeFields.bookingTime.replace(/:/g, '')}00/${mergeFields.bookingDate.replace(/-/g, '')}T${mergeFields.bookingTime.replace(/:/g, '')}00`,
-              `details=Booking+for+${encodeURIComponent(mergeFields.customerName)}`,
-              `location=${encodeURIComponent(mergeFields.jobAddress)}`
+              `dates=${mergeFields.bookingDate.replace(
+                /-/g,
+                ""
+              )}T${mergeFields.bookingTime.replace(
+                /:/g,
+                ""
+              )}00/${mergeFields.bookingDate.replace(
+                /-/g,
+                ""
+              )}T${mergeFields.bookingTime.replace(/:/g, "")}00`,
+              `details=Booking+for+${encodeURIComponent(
+                mergeFields.customerName
+              )}`,
+              `location=${encodeURIComponent(mergeFields.jobAddress)}`,
             ];
-            return base + '&' + params.join('&');
+            return base + "&" + params.join("&");
           }
 
           // Inject dynamic data and calendar links
@@ -251,7 +290,8 @@ const handleSendEmailIfCompleted = async (req, res) => {
           return hourAest >= 20 || hourAest < 8;
         }
         // Rate limiting (in-memory, per number, per hour)
-        const rateLimitMap = global._smsRateLimitMap || (global._smsRateLimitMap = {});
+        const rateLimitMap =
+          global._smsRateLimitMap || (global._smsRateLimitMap = {});
         const nowHour = new Date().toISOString().slice(0, 13);
 
         if (!rateLimitMap[smsNumber]) rateLimitMap[smsNumber] = {};
@@ -272,7 +312,12 @@ const handleSendEmailIfCompleted = async (req, res) => {
         if (isQuietHours()) {
           console.log(`Quiet hours: queueing SMS to ${smsNumber}`);
           // Queue SMS for later sending
-          const queuePath = path.join(__dirname, "..", "globals", "smsQueue.json");
+          const queuePath = path.join(
+            __dirname,
+            "..",
+            "globals",
+            "smsQueue.json"
+          );
           let queue = [];
           try {
             if (fs.existsSync(queuePath)) {
@@ -286,19 +331,26 @@ const handleSendEmailIfCompleted = async (req, res) => {
             message: null, // will be set below
             regardingJobUUID: jobUuid,
             mergeFields: smsMergeFields,
-            templatePath: smsTemplatePath
+            templatePath: smsTemplatePath,
           });
           // Prepare message for queue
           let smsTemplate = fs.readFileSync(smsTemplatePath, "utf8");
-          smsTemplate = smsTemplate.replace(/\[([A-Za-z0-9#]+)\]/g, (match, p1) => smsMergeFields[p1] || "");
-          if (smsTemplate.includes('[TrackingLink]')) {
-            const longUrl = 'https://your-tracking-link.com';
-            let customName = 'asap';
+          smsTemplate = smsTemplate.replace(
+            /\[([A-Za-z0-9#]+)\]/g,
+            (match, p1) => smsMergeFields[p1] || ""
+          );
+          if (smsTemplate.includes("[TrackingLink]")) {
+            const longUrl = "https://your-tracking-link.com";
+            let customName = "asap";
             if (existingJob.id) customName += `-job-${existingJob.id}`;
-            if (primaryContact.first) customName += `-${primaryContact.first.toLowerCase()}`;
-            customName = customName.replace(/[^a-zA-Z0-9\-]/g, '');
+            if (primaryContact.first)
+              customName += `-${primaryContact.first.toLowerCase()}`;
+            customName = customName.replace(/[^a-zA-Z0-9\-]/g, "");
             const { shortenUrl } = require("../services/bitlyService");
-            smsTemplate = smsTemplate.replace('[TrackingLink]', await shortenUrl(longUrl, customName));
+            smsTemplate = smsTemplate.replace(
+              "[TrackingLink]",
+              await shortenUrl(longUrl, customName)
+            );
           }
           queue[queue.length - 1].message = smsTemplate;
           try {
@@ -308,62 +360,78 @@ const handleSendEmailIfCompleted = async (req, res) => {
           }
           return;
         }
-// Function to process queued SMS messages (call this on a schedule or at startup)
-async function processSmsQueue() {
-  const queuePath = path.join(__dirname, "..", "globals", "smsQueue.json");
-  let queue = [];
-  try {
-    if (fs.existsSync(queuePath)) {
-      queue = JSON.parse(fs.readFileSync(queuePath, "utf8"));
-    }
-  } catch (e) {
-    console.error("Failed to read SMS queue", e);
-    return;
-  }
-  if (!queue.length) return;
-  // Only send if not quiet hours
-  function isQuietHours() {
-    const nowUtc = new Date();
-    let hourAest = nowUtc.getUTCHours() + 10;
-    if (hourAest >= 24) hourAest -= 24;
-    return hourAest >= 20 || hourAest < 8;
-  }
-  if (isQuietHours()) return;
-  const { shortenUrl } = require("../services/bitlyService");
-  for (const sms of queue) {
-    try {
-      await axios.post(
-        "https://api.servicem8.com/platform_service_sms",
-        {
-          to: sms.to,
-          message: sms.message,
-          regardingJobUUID: sms.regardingJobUUID,
-        },
-        { headers: authHeaders() }
-      );
-      console.log(`Queued SMS sent to ${sms.to}`);
-    } catch (err) {
-      console.error(`Failed to send queued SMS to ${sms.to}`, err.response?.data || err.message);
-    }
-  }
-  // Clear queue after sending
-  try {
-    fs.writeFileSync(queuePath, JSON.stringify([], null, 2));
-  } catch (e) {
-    console.error("Failed to clear SMS queue", e);
-  }
-}
+        // Function to process queued SMS messages (call this on a schedule or at startup)
+        async function processSmsQueue() {
+          const queuePath = path.join(
+            __dirname,
+            "..",
+            "globals",
+            "smsQueue.json"
+          );
+          let queue = [];
+          try {
+            if (fs.existsSync(queuePath)) {
+              queue = JSON.parse(fs.readFileSync(queuePath, "utf8"));
+            }
+          } catch (e) {
+            console.error("Failed to read SMS queue", e);
+            return;
+          }
+          if (!queue.length) return;
+          // Only send if not quiet hours
+          function isQuietHours() {
+            const nowUtc = new Date();
+            let hourAest = nowUtc.getUTCHours() + 10;
+            if (hourAest >= 24) hourAest -= 24;
+            return hourAest >= 20 || hourAest < 8;
+          }
+          if (isQuietHours()) return;
+          const { shortenUrl } = require("../services/bitlyService");
+          for (const sms of queue) {
+            try {
+              await axios.post(
+                "https://api.servicem8.com/platform_service_sms",
+                {
+                  to: sms.to,
+                  message: sms.message,
+                  regardingJobUUID: sms.regardingJobUUID,
+                },
+                { headers: authHeaders() }
+              );
+              console.log(`Queued SMS sent to ${sms.to}`);
+            } catch (err) {
+              console.error(
+                `Failed to send queued SMS to ${sms.to}`,
+                err.response?.data || err.message
+              );
+            }
+          }
+          // Clear queue after sending
+          try {
+            fs.writeFileSync(queuePath, JSON.stringify([], null, 2));
+          } catch (e) {
+            console.error("Failed to clear SMS queue", e);
+          }
+        }
         try {
           console.log(`Attempting to send SMS to ${smsNumber}`);
           // Read SMS template from file
-          const smsTemplatePath = path.join(__dirname, "..", "templates", "messages", "confirmation.txt");
+          const smsTemplatePath = path.join(
+            __dirname,
+            "..",
+            "templates",
+            "messages",
+            "confirmation.txt"
+          );
           let smsTemplate = fs.readFileSync(smsTemplatePath, "utf8");
           // Merge fields for customer, booking, technician
-          const smsTechnician = existingJob.allocated_staff ? existingJob.allocated_staff[0] : {};
+          const smsTechnician = existingJob.allocated_staff
+            ? existingJob.allocated_staff[0]
+            : {};
           const smsMergeFields = {
             FirstName: primaryContact.first || "",
             LastName: primaryContact.last || "",
-            'Booking#': existingJob.id || "",
+            "Booking#": existingJob.id || "",
             BookingDate: existingJob.start_date || "",
             BookingTime: existingJob.start_time || "",
             Address: existingJob.job_address || "",
@@ -376,19 +444,23 @@ async function processSmsQueue() {
           const { shortenUrl } = require("../services/bitlyService");
 
           // Replace all merge fields in template
-          smsTemplate = smsTemplate.replace(/\[([A-Za-z0-9#]+)\]/g, (match, p1) => smsMergeFields[p1] || "");
+          smsTemplate = smsTemplate.replace(
+            /\[([A-Za-z0-9#]+)\]/g,
+            (match, p1) => smsMergeFields[p1] || ""
+          );
 
           // Example: Replace [TrackingLink] with a shortened URL if present
-          if (smsTemplate.includes('[TrackingLink]')) {
-            const longUrl = 'https://your-tracking-link.com';
+          if (smsTemplate.includes("[TrackingLink]")) {
+            const longUrl = "https://your-tracking-link.com";
             // Use a descriptive name: e.g. 'asap-job-<jobId>-<firstName>'
-            let customName = 'asap';
+            let customName = "asap";
             if (existingJob.id) customName += `-job-${existingJob.id}`;
-            if (primaryContact.first) customName += `-${primaryContact.first.toLowerCase()}`;
+            if (primaryContact.first)
+              customName += `-${primaryContact.first.toLowerCase()}`;
             // Remove spaces and non-url chars
-            customName = customName.replace(/[^a-zA-Z0-9\-]/g, '');
+            customName = customName.replace(/[^a-zA-Z0-9\-]/g, "");
             const shortUrl = await shortenUrl(longUrl, customName);
-            smsTemplate = smsTemplate.replace('[TrackingLink]', shortUrl);
+            smsTemplate = smsTemplate.replace("[TrackingLink]", shortUrl);
           }
 
           // Retry & backoff logic
@@ -396,32 +468,49 @@ async function processSmsQueue() {
           const maxAttempts = 3;
           let sent = false;
           let lastErr = null;
-          while (attempt < maxAttempts && !sent) {
-            try {
-              await axios.post(
-                "https://api.servicem8.com/platform_service_sms",
-                {
-                  to: smsNumber,
-                  message: smsTemplate,
-                  regardingJobUUID: jobUuid,
-                },
-                { headers: authHeaders() }
-              );
-              sent = true;
-              // Rate limit increment
-              rateLimitMap[smsNumber][nowHour] = (rateLimitMap[smsNumber][nowHour] || 0) + 1;
-              console.log(`SMS sent to ${smsNumber}`);
-            } catch (smsErr) {
-              lastErr = smsErr;
-              attempt++;
-              const backoff = Math.pow(2, attempt) * 1000;
-              console.error(`❌ Failed to send SMS (attempt ${attempt}):`, smsErr.response?.data || smsErr.message);
-              if (attempt < maxAttempts) await new Promise(r => setTimeout(r, backoff));
-            }
-          }
+          console.log({
+            to: smsNumber,
+            message: smsTemplate,
+            regardingJobUUID: jobUuid,
+          });
+          return res.staus(200).json({
+            to: smsNumber,
+            message: smsTemplate,
+            regardingJobUUID: jobUuid,
+          })
+          // while (attempt < maxAttempts && !sent) {
+          //   try {
+          //     await axios.post(
+          //       "https://api.servicem8.com/platform_service_sms",
+          //       {
+          //         to: smsNumber,
+          //         message: smsTemplate,
+          //         regardingJobUUID: jobUuid,
+          //       },
+          //       { headers: authHeaders() }
+          //     );
+          //     sent = true;
+          //     // Rate limit increment
+          //     rateLimitMap[smsNumber][nowHour] =
+          //       (rateLimitMap[smsNumber][nowHour] || 0) + 1;
+          //     console.log(`SMS sent to ${smsNumber}`);
+          //   } catch (smsErr) {
+          //     lastErr = smsErr;
+          //     attempt++;
+          //     const backoff = Math.pow(2, attempt) * 1000;
+          //     console.error(
+          //       `❌ Failed to send SMS (attempt ${attempt}):`,
+          //       smsErr.response?.data || smsErr.message
+          //     );
+          //     if (attempt < maxAttempts)
+          //       await new Promise((r) => setTimeout(r, backoff));
+          //   }
+          // }
           if (!sent) {
             // Delivery failure handling: log or notify
-            console.error(`❌ SMS delivery failed for ${smsNumber} after ${maxAttempts} attempts.`);
+            console.error(
+              `❌ SMS delivery failed for ${smsNumber} after ${maxAttempts} attempts.`
+            );
           }
         } catch (smsErr) {
           console.error(
