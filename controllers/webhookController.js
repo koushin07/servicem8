@@ -235,6 +235,40 @@ const handleSendEmailIfCompleted = async (req, res) => {
       //Send SMS
       if (primaryContact.mobile || primaryContact.phone) {
         const smsNumber = primaryContact.mobile || primaryContact.phone;
+        const { isSmsSuppressed } = require("./smsSuppressionController");
+        // Phone validation (simple E.164 check)
+        function isValidPhone(phone) {
+          return /^\+\d{10,15}$/.test(phone);
+        }
+        // Quiet hours (e.g., 8am-8pm)
+        function isQuietHours() {
+          const now = new Date();
+          const hour = now.getHours();
+          return hour < 8 || hour >= 20;
+        }
+        // Rate limiting (in-memory, per number, per hour)
+        const rateLimitMap = global._smsRateLimitMap || (global._smsRateLimitMap = {});
+        const nowHour = new Date().toISOString().slice(0, 13);
+
+        if (!rateLimitMap[smsNumber]) rateLimitMap[smsNumber] = {};
+
+        if (rateLimitMap[smsNumber][nowHour] >= 3) {
+          console.log(`Rate limit exceeded for ${smsNumber}`);
+          return;
+        }
+
+        if (isSmsSuppressed(smsNumber)) {
+          console.log(`SMS suppressed for ${smsNumber}`);
+          return;
+        }
+        if (!isValidPhone(smsNumber)) {
+          console.log(`Invalid phone number: ${smsNumber}`);
+          return;
+        }
+        if (isQuietHours()) {
+          console.log(`Quiet hours: not sending SMS to ${smsNumber}`);
+          return;
+        }
         try {
           console.log(`Attempting to send SMS to ${smsNumber}`);
           // Read SMS template from file
@@ -254,33 +288,60 @@ const handleSendEmailIfCompleted = async (req, res) => {
             // Add more fields as needed
           };
 
-          // URL shortener placeholder for tracking links
-          function shortenUrl(url) {
-            // TODO: Integrate with a real URL shortener service
-            return url;
-          }
+          // Integrate Bitly for URL shortening
+          const { shortenUrl } = require("../services/bitlyService");
 
           // Replace all merge fields in template
           smsTemplate = smsTemplate.replace(/\[([A-Za-z0-9#]+)\]/g, (match, p1) => smsMergeFields[p1] || "");
 
           // Example: Replace [TrackingLink] with a shortened URL if present
           if (smsTemplate.includes('[TrackingLink]')) {
-            smsTemplate = smsTemplate.replace('[TrackingLink]', shortenUrl('https://your-tracking-link.com'));
+            const longUrl = 'https://your-tracking-link.com';
+            // Use a descriptive name: e.g. 'asap-job-<jobId>-<firstName>'
+            let customName = 'asap';
+            if (existingJob.id) customName += `-job-${existingJob.id}`;
+            if (primaryContact.first) customName += `-${primaryContact.first.toLowerCase()}`;
+            // Remove spaces and non-url chars
+            customName = customName.replace(/[^a-zA-Z0-9\-]/g, '');
+            const shortUrl = await shortenUrl(longUrl, customName);
+            smsTemplate = smsTemplate.replace('[TrackingLink]', shortUrl);
           }
 
-          await axios.post(
-            "https://api.servicem8.com/platform_service_sms",
-            {
-              to: smsNumber,
-              message: smsTemplate,
-              regardingJobUUID: jobUuid,
-            },
-            { headers: authHeaders() }
-          );
-          console.log(`SMS sent to ${smsNumber}`);
+          // Retry & backoff logic
+          let attempt = 0;
+          const maxAttempts = 3;
+          let sent = false;
+          let lastErr = null;
+          while (attempt < maxAttempts && !sent) {
+            try {
+              await axios.post(
+                "https://api.servicem8.com/platform_service_sms",
+                {
+                  to: smsNumber,
+                  message: smsTemplate,
+                  regardingJobUUID: jobUuid,
+                },
+                { headers: authHeaders() }
+              );
+              sent = true;
+              // Rate limit increment
+              rateLimitMap[smsNumber][nowHour] = (rateLimitMap[smsNumber][nowHour] || 0) + 1;
+              console.log(`SMS sent to ${smsNumber}`);
+            } catch (smsErr) {
+              lastErr = smsErr;
+              attempt++;
+              const backoff = Math.pow(2, attempt) * 1000;
+              console.error(`❌ Failed to send SMS (attempt ${attempt}):`, smsErr.response?.data || smsErr.message);
+              if (attempt < maxAttempts) await new Promise(r => setTimeout(r, backoff));
+            }
+          }
+          if (!sent) {
+            // Delivery failure handling: log or notify
+            console.error(`❌ SMS delivery failed for ${smsNumber} after ${maxAttempts} attempts.`);
+          }
         } catch (smsErr) {
           console.error(
-            "❌ Failed to send SMS",
+            "❌ Failed to send SMS (outer catch)",
             smsErr.response?.data || smsErr.message
           );
         }
