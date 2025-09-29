@@ -16,10 +16,14 @@ async function shortenUrl(longUrl, name) {
   }
   try {
     const payload = { long_url: longUrl };
-    // If a custom name is provided, use it as the Bitly back-half
+    // Accept custom domain as third argument
+    let domain = 'asaprwc.com';
+
     if (name) {
-      payload.domain = 'bit.ly';
-      payload.custom_bitlink = `bit.ly/${name}`;
+      payload.domain = domain;
+      payload.custom_bitlink = `${domain}/${name}`;
+    } else {
+      payload.domain = domain;
     }
     const response = await axios.post(
       BITLY_API_URL,

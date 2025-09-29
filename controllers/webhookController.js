@@ -451,8 +451,15 @@ const handleSendEmailIfCompleted = async (req, res) => {
             // Use a descriptive name: e.g. 'asap-job-<jobId>-<firstName>'
 
             try {
-              const shortUrl = await shortenUrl(longUrl, `your-portal-${primaryContact.first.toLowerCase()}-${existingJob.generated_job_id}`);
-              console.log("🔗 Bitly response for ", primaryContact.first, ":", shortUrl);
+              // Sanitize custom name: only letters, numbers, dashes
+              let customName = `your-portal-${primaryContact.first.toLowerCase()}-${existingJob.generated_job_id}`;
+              customName = customName.replace(/[^a-zA-Z0-9-]/g, "-");
+              customName = customName.replace(/-+/g, "-");
+
+              // Use custom domain if set in environment, else default to bit.ly
+              const customDomain = process.env.BITLY_CUSTOM_DOMAIN || 'bit.ly';
+              const shortUrl = await shortenUrl(longUrl, customName, customDomain);
+              console.log(`🔗 Bitly response for ${customDomain}/${customName}:`, shortUrl);
               smsTemplate = smsTemplate.replace("[TrackingLink]", shortUrl);
             } catch (bitlyErr) {
               console.error("❌ Bitly error for ", primaryContact.first, ":", bitlyErr.message || bitlyErr);
