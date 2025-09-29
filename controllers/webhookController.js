@@ -451,7 +451,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
             // Use a descriptive name: e.g. 'asap-job-<jobId>-<firstName>'
 
             try {
-              const shortUrl = await shortenUrl(longUrl, "asap-portal");
+              const shortUrl = await shortenUrl(longUrl, `your-portal-${primaryContact.first.toLowerCase()}-${existingJob.generated_job_id}`);
               console.log("🔗 Bitly response for ", primaryContact.first, ":", shortUrl);
               smsTemplate = smsTemplate.replace("[TrackingLink]", shortUrl);
             } catch (bitlyErr) {
