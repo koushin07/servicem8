@@ -474,7 +474,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
             regardingJobUUID: jobUuid,
           });
           console.log(existingJob)
-          return res.staus(200).json({
+          return res.status(200).json({
             to: smsNumber,
             message: smsTemplate,
             regardingJobUUID: jobUuid,
