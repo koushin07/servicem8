@@ -1,2 +1,2 @@
 Get Ready, [FirstName]! Booking #[Booking#] is confirmed!
-Important details in email or get LIVE updates at asaprwc.au/portal
+Important details in email or get LIVE updates at [TrackingLink]
