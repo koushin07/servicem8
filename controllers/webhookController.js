@@ -431,7 +431,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
           const smsMergeFields = {
             FirstName: primaryContact.first || "",
             LastName: primaryContact.last || "",
-            "Booking#": existingJob.id || "",
+            "Booking#": existingJob.generated_job_id || "655453",
             BookingDate: existingJob.start_date || "",
             BookingTime: existingJob.start_time || "",
             Address: existingJob.job_address || "",
@@ -445,15 +445,7 @@ const handleSendEmailIfCompleted = async (req, res) => {
           // Integrate Bitly for URL shortening
           const { shortenUrl } = require("../services/bitlyService");
 
-          // Replace all merge fields in template
-          smsTemplate = smsTemplate.replace(
-            /\[([A-Za-z0-9#]+)\]/g,
-            (match, p1) => smsMergeFields[p1] || ""
-          );
-        // Debug: Log template after merge field replacement, before Bitly
-        console.log("📝 SMS Template after merge field replacement:", smsTemplate);
-
-          // Example: Replace [TrackingLink] with a shortened URL if present
+          // First, replace [TrackingLink] with Bitly short URL if present
           if (smsTemplate.includes("[TrackingLink]")) {
             const longUrl = "https://www.asaproadworthys.com.au/.well-known/sgcaptcha/?r=%2F&y=ipr:120.28.252.170:1759109027.849";
             // Use a descriptive name: e.g. 'asap-job-<jobId>-<firstName>'
@@ -472,6 +464,14 @@ const handleSendEmailIfCompleted = async (req, res) => {
               smsTemplate = smsTemplate.replace("[TrackingLink]", "[BitlyError]");
             }
           }
+
+          // Now replace all other merge fields in template
+          smsTemplate = smsTemplate.replace(
+            /\[([A-Za-z0-9#]+)\]/g,
+            (match, p1) => smsMergeFields[p1] || ""
+          );
+          // Debug: Log template after all replacements
+          console.log("📝 SMS Template after all replacements:", smsTemplate);
 
           // Retry & backoff logic
           let attempt = 0;
