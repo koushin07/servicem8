@@ -448,15 +448,14 @@ const handleSendEmailIfCompleted = async (req, res) => {
           // First, replace [TrackingLink] with Bitly short URL if present
           if (smsTemplate.includes("[TrackingLink]")) {
             const longUrl = "https://www.asaproadworthys.com.au/.well-known/sgcaptcha/?r=%2F&y=ipr:120.28.252.170:1759109027.849";
+            // Use a descriptive name: e.g. 'asap-job-<jobId>-<firstName>'
 
-            // Remove spaces and non-url chars
-            customName = customName.replace(/[^a-zA-Z0-9\-]/g, "asap-portal");
             try {
-              const shortUrl = await shortenUrl(longUrl, "asap");
-              console.log("🔗 Bitly response for ", customName, ":", shortUrl);
+              const shortUrl = await shortenUrl(longUrl, "asap-portal");
+              console.log("🔗 Bitly response for ", primaryContact.first, ":", shortUrl);
               smsTemplate = smsTemplate.replace("[TrackingLink]", shortUrl);
             } catch (bitlyErr) {
-              console.error("❌ Bitly error for ", customName, ":", bitlyErr.message || bitlyErr);
+              console.error("❌ Bitly error for ", primaryContact.first, ":", bitlyErr.message || bitlyErr);
               smsTemplate = smsTemplate.replace("[TrackingLink]", "[BitlyError]");
             }
           }
